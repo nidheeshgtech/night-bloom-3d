@@ -62,6 +62,61 @@ const HINTS = {
   inspect: 'Drag to circle the sculpture · Esc to go back',
 }
 
+function IconBtn({ icon, label, onClick, active, glow }) {
+  return (
+    <button className={`bar-btn ${active ? 'active' : ''} ${glow ? 'glow' : ''}`} onClick={onClick} aria-label={label} data-tip={label}>
+      <Icon name={icon} />
+    </button>
+  )
+}
+
+// "Explore" popup listing places (gardens from the air, features inside a garden).
+function Explore({ title, items }) {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const close = (e) => !e.target.closest?.('.explore') && setOpen(false)
+    window.addEventListener('pointerdown', close)
+    return () => window.removeEventListener('pointerdown', close)
+  }, [open])
+  if (!items.length) return null
+  return (
+    <div className="explore">
+      <button className={`bar-btn wide ${open ? 'active' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Explore places">
+        <Icon name="pin" /> <span>Explore</span>
+      </button>
+      {open && (
+        <div className="explore-pop" role="menu">
+          <p className="label">{title}</p>
+          {items.map((it) => (
+            <button key={it.id} role="menuitem" onClick={() => (setOpen(false), it.go())} style={it.color ? { '--zone': it.color } : undefined}>
+              {it.num ? <span className="zone-pin-num">{it.num}</span> : <span className="explore-dot" />}
+              <span className="explore-text">
+                <strong>{it.label}</strong>
+                <span>{it.sub}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Shows each mode's hint for a few seconds, once per session, then fades it away.
+const seenHints = new Set()
+function Hint({ text, mode }) {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (!text || seenHints.has(mode)) return setVisible(false)
+    seenHints.add(mode)
+    setVisible(true)
+    const t = setTimeout(() => setVisible(false), 6000)
+    return () => clearTimeout(t)
+  }, [text, mode])
+  return <p className={`hint ${visible ? 'show' : ''}`}>{text}</p>
+}
+
 export default function Hud() {
   const mode = useGarden((s) => s.mode)
   const night = useGarden((s) => s.night)
@@ -164,80 +219,39 @@ export default function Hud() {
         </button>
       </div>
 
-      {hint && <p className="hint">{hint}</p>}
+      <Hint text={hint} mode={mode} />
 
-      <div className="dock">
-        {canTravel && (
-          <div className="travel">
-            {showZones
-              ? zones.map((z) => (
-                  <button key={z.id} className="chip" onClick={() => rig.focusZone(z.id)}>
-                    {z.name}
-                  </button>
-                ))
-              : features.map((s) => (
-                  <button key={s.id} className="chip" onClick={() => rig.inspect(s.id)}>
-                    {s.name}
-                  </button>
-                ))}
-          </div>
-        )}
-        <div className="dock-row">
-          {mode === 'aerial' && focused && (
-            <button className="btn" onClick={rig.toAerial}>
-              World view
-            </button>
-          )}
-          {mode === 'aerial' && !focused && (
-            <button className="btn" onClick={rig.tour}>
-              Tour
-            </button>
-          )}
+      {mode !== 'intro' && (
+        <div className="bar" role="toolbar" aria-label="Garden controls">
+          {mode === 'aerial' && focused && <IconBtn icon="home" label="World view" onClick={rig.toAerial} />}
+          {mode === 'aerial' && !focused && <IconBtn icon="play" label="Watch the tour" onClick={rig.tour} />}
           {mode === 'aerial' && !focused && world.zones && (
-            <button className="btn" onClick={siteMapOn ? rig.closeSiteMap : rig.siteMap}>
-              <Icon name="map" /> {siteMapOn ? 'Close map' : 'Site map'}
-            </button>
+            <IconBtn icon="map" label={siteMapOn ? 'Close site map' : 'Site map'} active={siteMapOn} onClick={siteMapOn ? rig.closeSiteMap : rig.siteMap} />
+          )}
+          {mode === 'walk' && <IconBtn icon="aerial" label="Exit to aerial view" onClick={rig.toAerial} />}
+          {mode === 'inspect' && <IconBtn icon="back" label="Back" onClick={rig.back} />}
+          {canTravel && (
+            <Explore
+              title={showZones ? 'Gardens' : 'In this garden'}
+              items={showZones ? zones.map((z, i) => ({ id: z.id, label: z.name, sub: z.theme, num: i + 1, color: z.color, go: () => rig.focusZone(z.id) })) : features.map((f) => ({ id: f.id, label: f.name, sub: f.kind, go: () => rig.inspect(f.id) }))}
+            />
           )}
           {mode === 'aerial' && focused?.status !== 'soon' && (
-            <button className="btn primary" onClick={rig.enter}>
-              {focused ? `Enter ${focused.name}` : 'Enter the garden'}
-            </button>
-          )}
-          {mode === 'walk' && (
-            <button className="btn" onClick={rig.toAerial}>
-              Exit to aerial view
-            </button>
-          )}
-          {mode === 'inspect' && (
-            <button className="btn" onClick={rig.back}>
-              Back
+            <button className="bar-primary" onClick={rig.enter}>
+              {focused ? `Enter ${focused.name}` : 'Enter garden'}
             </button>
           )}
           {(mode === 'aerial' || mode === 'walk') && world.tour && (
-            <button className={`btn ${showOn ? '' : 'show-btn'}`} onClick={showOn ? rig.stopShow : rig.lightShow}>
-              <Icon name={showOn ? 'close' : 'spark'} /> {showOn ? 'Stop show' : 'Light show'}
-            </button>
+            <IconBtn icon={showOn ? 'close' : 'spark'} label={showOn ? 'Stop light show' : 'Light show'} glow={!showOn} onClick={showOn ? rig.stopShow : rig.lightShow} />
           )}
-          {mode === 'flying' && (
-            <button className="btn" disabled>
-              Flying…
-            </button>
-          )}
-          <label className="time">
-            <Icon name="sun" size={16} />
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={night}
-              onChange={(e) => set({ night: Number(e.target.value) })}
-              aria-label="Time of day"
-            />
-            <Icon name="moon" size={16} />
+          {mode === 'flying' && <span className="bar-status">Flying…</span>}
+          <label className="bar-time" title="Time of day">
+            <Icon name="sun" size={15} />
+            <input type="range" min="0" max="1" step="0.01" value={night} onChange={(e) => set({ night: Number(e.target.value) })} aria-label="Time of day" />
+            <Icon name="moon" size={15} />
           </label>
         </div>
-      </div>
+      )}
 
       <InfoPanel />
       <CtaNote />

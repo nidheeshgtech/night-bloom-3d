@@ -145,3 +145,6 @@ export const fanousGlassMat = new THREE.MeshStandardMaterial({
   metalness: 0.3,
   side: THREE.DoubleSide,
 })
+
+// Wind-tower pavilion interiors: dark by day, warm glow through the screens at night.
+export const pavilionGlowMat = new THREE.MeshStandardMaterial({ color: '#1a120c', emissive: '#ff8a3a', emissiveIntensity: 0, roughness: 0.9 })

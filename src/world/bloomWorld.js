@@ -8,6 +8,7 @@ import { WORLD_RADIUS, ZONES, spokes } from './plan'
 import { petalBeds } from './petalPlanting'
 import { PROMENADE_PALMS, TREES } from './TreeBelts'
 import { buildTour } from './tour'
+import { PAVILIONS } from './Pavilions'
 import { GH, POND, SPRING, WALLS, glassCenter, halfWidth, inside as insideGlasshouse, toWorld as wingToWorld } from '../zone/wingsong/layout'
 import { getWingsongTargets } from '../zone/wingsong/library'
 import { PALMS_IN } from '../zone/wingsong/planting'
@@ -249,6 +250,7 @@ export const bloomWorld = {
     ...TREES.map((t) => ({ ...xz(t.pos), r: 0.45 * t.s })),
     ...PALMS_IN.map((p) => ({ ...xz(p), r: 0.55 })),
     ...LANTERNS.map((L) => ({ ...xz(L.pos), r: L.hero ? 0.6 : 0.35 })),
+    ...PAVILIONS.map((p) => ({ ...xz(p.pos), r: 1.75 })),
   ],
   walls: WALLS,
   zones,

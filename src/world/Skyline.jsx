@@ -105,6 +105,17 @@ function towerMaterial() {
       .replace('#include <common>', '#include <common>\nvarying vec2 vFacade;\nvarying vec3 vWorld;')
       .replace('#include <uv_vertex>', '#include <uv_vertex>\nvFacade = uv;\nvWorld = (modelMatrix * vec4(position, 1.0)).xyz;')
     shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <fog_fragment>',
+        `#ifdef USE_FOG
+          #ifdef FOG_EXP2
+            float fogFactor = 1.0 - exp(-fogDensity * fogDensity * vFogDepth * vFogDepth);
+          #else
+            float fogFactor = smoothstep(fogNear, fogFar, vFogDepth);
+          #endif
+          gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogFactor * 0.55);
+        #endif`,
+      )
       .replace('#include <common>', '#include <common>\nuniform float uNight;\nvarying vec2 vFacade;\nvarying vec3 vWorld;\nfloat hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
       .replace(
         '#include <color_fragment>',

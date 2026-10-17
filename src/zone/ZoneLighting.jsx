@@ -7,7 +7,7 @@ import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
 import { arches, archPoint, lamps } from './planting'
 import { pathToWorld } from './layout'
-import { bulbMat, fanousGlassMat, shadows, zoneUniforms } from './materials'
+import { bulbMat, fanousGlassMat, pavilionGlowMat, shadows, zoneUniforms } from './materials'
 
 // Sun direction measured from the HDRI's brightest pixel, so shadows match the visible sun.
 export const SUN_DIR = new THREE.Vector3(0.704, 0.486, 0.517).normalize()
@@ -117,6 +117,7 @@ export default function ZoneLighting() {
     if (scene.fog) skyUniforms.uHaze.value.copy(scene.fog.color)
     skyUniforms.uHazeAmt.value = lerp(0.75, 0.35, t)
     fanousGlassMat.emissiveIntensity = lerp(0.15, 3.2, t)
+    pavilionGlowMat.emissiveIntensity = lerp(0, 0.85, t)
     const lamp = lerp(DAY.lamp, NIGHT.lamp, t)
     lampLights.current.forEach((l) => l && (l.intensity = lamp))
     bulbMat.emissiveIntensity = lerp(DAY.bulb, NIGHT.bulb, t)

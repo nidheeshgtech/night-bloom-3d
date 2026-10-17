@@ -1,7 +1,8 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import PavedPath, { pavingMaterial } from '../Path'
+import PavedPath from '../Path'
+import { rosetteMaterial } from '../../world/patterns'
 import { useGarden } from '../../lib/store'
 import { LANTERN_PATH_HALF, PLAZA, lanternPath, plazaCenter, reedPositions, LANTERNS } from './layout'
 import { reedGeometry } from './geometry'
@@ -14,16 +15,12 @@ const REED_COLORS = ['#7fe8ff', '#9ab8ff', '#c79bff', '#7fffd4']
 
 function Plaza() {
   const geo = useMemo(() => {
-    const g = new THREE.CircleGeometry(PLAZA.r, 64)
+    const g = new THREE.RingGeometry(0, PLAZA.r, 64, 8)
     g.rotateX(-Math.PI / 2)
-    const pos = g.attributes.position
-    const uv = []
-    for (let i = 0; i < pos.count; i++) uv.push(pos.getX(i) / 1.6, pos.getZ(i) / 1.6)
-    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
     return g
   }, [])
   const c = plazaCenter()
-  return <mesh geometry={geo} material={pavingMaterial()} position={[c.x, c.y + 0.04, c.z]} receiveShadow />
+  return <mesh geometry={geo} material={rosetteMaterial()} position={[c.x, c.y + 0.04, c.z]} receiveShadow />
 }
 
 function Reeds() {

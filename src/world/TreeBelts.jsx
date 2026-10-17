@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import Instances from '../zone/Instances'
 import Palms from '../zone/Palms'
-import { cypressGeometry, treeGeometry } from '../zone/foliage'
+import { cypressGeometry, ghafGeometry, treeGeometry } from '../zone/foliage'
 import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
 import { heightAt } from './terrain'
@@ -47,14 +47,26 @@ export const PROMENADE_PALMS = (() => {
   return out
 })()
 
+// Lone ghaf trees dotting the desert just beyond the garden, as they grow in the wild.
+const DESERT_GHAF = (() => {
+  const rand = mulberry32(404)
+  const out = []
+  for (let i = 0; i < 26; i++) {
+    const a = rand() * Math.PI * 2
+    const r = 192 + rand() * 36
+    out.push({ pos: at(a, r), s: 0.9 + rand() * 0.6 })
+  }
+  return out
+})()
+
 export default function TreeBelts() {
   // Background trees only cast shadows on high quality.
   const high = useGarden((s) => s.quality === 'high')
-  const geos = useMemo(() => [treeGeometry(21), treeGeometry(22), treeGeometry(23), cypressGeometry(24)], [])
+  const geos = useMemo(() => [treeGeometry(21), ghafGeometry(31), treeGeometry(23), cypressGeometry(24)], [])
   const lists = useMemo(() => {
     const rand = mulberry32(31)
     return [0, 1, 2, 3].map((k) =>
-      TREES.filter((t) => t.k === k).map((t) =>
+      [...TREES.filter((t) => t.k === k), ...(k === 1 ? DESERT_GHAF : [])].map((t) =>
         new THREE.Matrix4().compose(V(t.pos.x, t.pos.y - 0.1, t.pos.z), new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), rand() * 6), k === 3 ? V(0.9, t.s, 0.9) : V(t.s, t.s * (0.9 + rand() * 0.3), t.s)),
       ),
     )

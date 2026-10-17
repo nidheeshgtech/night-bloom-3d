@@ -30,6 +30,8 @@ for traceability. Check the asset pages again before publishing in case anything
   descriptions of each species, not traced from photographs); Seed Lanterns, Light Reeds and Moon
   Lilies: all generated in code in `src/zone/`.
 - Skyline: generic procedural towers, deliberately not modelled on any real building.
+- Wind-tower pavilions, mashrabiya lattice, star rosettes and ghaf trees: original designs drawn
+  in code from traditional regional forms.
 - Fanous lanterns and the 8-point-star lattice: traditional geometric pattern drawn in code.
 - Ambient audio: synthesised with the Web Audio API in `src/lib/audio.js`.
 

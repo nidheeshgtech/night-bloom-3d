@@ -67,10 +67,17 @@ export function buildTour() {
     },
     { caption: 'Lantern Shore', sub: 'Seed lanterns, light reeds and moon lilies on the lake', ...shore, duration: 16, ease: 'none' },
     {
+      caption: 'A garden in the desert',
+      sub: 'An oasis by day, framed by city lights at night',
+      pos: [up(lanternPath.toWorld(lanternPath.length - 1, 0), 14), V(-30, 14, 45), V(15, 5, 22)],
+      look: [lake, V(100, 50, -400), V(180, 90, -700)],
+      duration: 11,
+    },
+    {
       caption: 'Night Bloom',
       sub: 'Explore it yourself',
-      pos: [up(lanternPath.toWorld(lanternPath.length - 1, 0), 15), V(-40, 70, 120), V(0, 165, 230)],
-      look: [lake, lake, V(0, 0, 10)],
+      pos: [V(15, 25, 10), V(-40, 70, 120), V(0, 165, 230)],
+      look: [V(150, 80, -600), lake, V(0, 0, 10)],
       duration: 9,
     },
   ]

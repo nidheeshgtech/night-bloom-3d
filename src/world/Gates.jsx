@@ -58,7 +58,7 @@ export default function Gates() {
       const base = path.toWorld(path.length - 1.5, 0)
       arches.push(...gateArch(f, base))
       // Information plinth beside the gate.
-      const p = path.toWorld(path.length - 3, 3.4)
+      const p = path.toWorld(path.length - 5, 3.4)
       const yaw = Math.atan2(f.tx, f.tz) + Math.PI
       plinths.push(new THREE.Matrix4().compose(p.clone().add(new THREE.Vector3(0, 0.8, 0)), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(0.6, 1.6, 0.24)))
       const face = new THREE.Vector3(-f.tx, 0, -f.tz).multiplyScalar(0.13)

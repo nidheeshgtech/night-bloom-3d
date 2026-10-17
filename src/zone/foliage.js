@@ -208,3 +208,48 @@ export function cypressGeometry(seed) {
   }
   return b.toGeometry()
 }
+
+// Ghaf (Prosopis cineraria), the UAE's national tree: gnarled trunk forking low into
+// spreading branches, flat umbrella crowns of fine grey-green foliage with drooping fronds.
+export function ghafGeometry(seed) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  const BARK = [0.16, 0.12, 0.09]
+  // Push the green atlas toward ghaf's dusty grey-green.
+  const leaf = () => {
+    const v = 0.9 + rand() * 0.25
+    return [v * 1.4, v * 1.08, v * 1.3]
+  }
+  const fork = V((rand() - 0.5) * 0.4, 1.3, (rand() - 0.5) * 0.4)
+  b.tube([V(0, 0, 0), V(0.15, 0.7, -0.05), fork], [0.3, 0.24, 0.2], 8, BARK)
+  const n = 4 + Math.floor(rand() * 2)
+  for (let k = 0; k < n; k++) {
+    const a = (k / n) * Math.PI * 2 + rand() * 0.6
+    const reach = 2.0 + rand() * 1.4
+    const tip = fork.clone().add(V(Math.cos(a) * reach, 1.4 + rand() * 1.2, Math.sin(a) * reach))
+    const mid = fork.clone().lerp(tip, 0.5).add(V(0, 0.45, 0))
+    b.tube([fork, mid, tip], [0.15, 0.1, 0.05], 6, BARK)
+    const r = 1.3 + rand() * 0.6
+    // Small dark core, well inside the foliage shell; ghaf crowns are airy.
+    b.grid(3, 7, (i, j) => {
+      const e = (i / 3) * Math.PI - Math.PI / 2
+      const az = (j / 7) * Math.PI * 2
+      return { p: tip.clone().add(V(Math.cos(e) * Math.cos(az) * r * 0.5, Math.sin(e) * r * 0.2, Math.cos(e) * Math.sin(az) * r * 0.5)), c: CORE }
+    })
+    for (let i = 0; i < 60; i++) {
+      const e = Math.asin(rand() * 1.6 - 0.6)
+      const az = rand() * Math.PI * 2
+      const nn = V(Math.cos(e) * Math.cos(az), Math.sin(e) * 0.45, Math.cos(e) * Math.sin(az)).normalize()
+      const p = tip.clone().add(V(nn.x * r, nn.y * r, nn.z * r))
+      card(b, p, nn.clone().add(V(0, 0.5, 0)).normalize(), 0.62, 'pinnate', leaf(), rand)
+    }
+    // Drooping fronds around the crown's rim.
+    for (let i = 0; i < 18; i++) {
+      const az = rand() * Math.PI * 2
+      const out = V(Math.cos(az), 0, Math.sin(az))
+      const p = tip.clone().addScaledVector(out, r * (0.7 + rand() * 0.25)).add(V(0, -0.25 - rand() * 0.55, 0))
+      card(b, p, out, 0.6, 'pinnate', leaf(), rand)
+    }
+  }
+  return b.toGeometry()
+}

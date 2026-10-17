@@ -10,6 +10,8 @@ import TreeBelts from './TreeBelts'
 import Gates from './Gates'
 import ZoneMarkers from './ZoneMarkers'
 import PromenadeLamps from './PromenadeLamps'
+import BookingPins from './BookingPins'
+import LightShow from './LightShow'
 import LakeReflections from './LakeReflections'
 import Skyline from './Skyline'
 import Pavilions from './Pavilions'
@@ -84,6 +86,8 @@ export default function WorldScene() {
         <ZoneContent key={z.id} zone={z} />
       ))}
       <ZoneMarkers />
+      <BookingPins />
+      <LightShow />
     </>
   )
 }

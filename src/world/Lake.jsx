@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { QUAY_RADIUS, WATER_LEVEL, heightAt } from './terrain'
 import { pbrSet, zoneUniforms } from '../zone/materials'
 import { withNightLight } from '../zone/nightlight'
+import { showState } from './LightShow'
 
 // Tileable ripple normal map from integer-frequency sine waves.
 export function rippleTexture() {
@@ -115,7 +116,7 @@ export default function Lake() {
   const quay = useMemo(quayGeometry, [])
 
   useFrame((_, dt) => {
-    water.emissiveIntensity = zoneUniforms.uNight.value * 0.28
+    water.emissiveIntensity = zoneUniforms.uNight.value * 0.28 + showState.glow
     ripple.offset.x += dt * 0.004
     ripple.offset.y += dt * 0.0025
   })

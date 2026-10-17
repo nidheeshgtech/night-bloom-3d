@@ -91,6 +91,36 @@ class GardenAudio {
     for (let i = 0; i < notes; i++) this.voice('sine', base, t0 + i * 0.11, 0.09, peak, pan, 1.5)
   }
 
+  // Firework: low thump plus a short crackle of filtered noise.
+  boom() {
+    if (!this.ctx) return
+    const ctx = this.ctx
+    const t0 = ctx.currentTime + 0.05
+    const thump = ctx.createOscillator()
+    const tg = ctx.createGain()
+    thump.frequency.setValueAtTime(110, t0)
+    thump.frequency.exponentialRampToValueAtTime(38, t0 + 0.5)
+    tg.gain.setValueAtTime(0.0001, t0)
+    tg.gain.exponentialRampToValueAtTime(0.35, t0 + 0.02)
+    tg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.9)
+    thump.connect(tg).connect(this.master)
+    thump.start(t0)
+    thump.stop(t0 + 1)
+    const len = ctx.sampleRate * 0.9
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate)
+    const d = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (Math.random() < 0.08 ? 1 : 0.15) * Math.pow(1 - i / len, 2)
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+    const hp = ctx.createBiquadFilter()
+    hp.type = 'highpass'
+    hp.frequency.value = 1800
+    const ng = ctx.createGain()
+    ng.gain.value = 0.12
+    src.connect(hp).connect(ng).connect(this.master)
+    src.start(t0 + 0.15)
+  }
+
   cricket() {
     const pan = this.panner()
     const t0 = this.ctx.currentTime

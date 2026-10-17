@@ -24,6 +24,16 @@
 - **Touch:** tap the ground or an arrow to walk, swipe to look, tap flowers to learn more.
 - **Exit to aerial view** returns to the overview.
 
+## Light show
+**Light show** (bottom bar) switches to night, flies to the lakeside and runs a ~55 s drone show
+(8-point star, flower, butterfly, palm, the brand name) with a fireworks finale. Sound on recommended.
+
+## Client re-skins
+Each client is one entry in `src/brand/presets.js`: name, intro text, accent colour, zone names and
+taglines, booking button labels and URLs, and the text the drones spell. Open with `?brand=<key>`,
+for example `?brand=oasis` (a fictional sample resort). Booking buttons with no URL show a short note
+explaining where the client's booking page would open.
+
 ## Handy keys
 - `` ` `` (backtick): show/hide fps, draw calls and triangles (for technical audiences).
 - `Esc`: stop tour, leave inspect, close panels.

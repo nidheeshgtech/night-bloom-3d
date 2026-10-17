@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { BRAND } from '../brand'
+import { zoneById } from './plan'
 import { avenue } from '../zone/layout'
 import { innerPath, toWorld as wingToWorld } from '../zone/wingsong/layout'
 import { lanternPath } from '../zone/lantern/layout'
@@ -27,7 +29,7 @@ export function buildTour() {
   const shore = glide(lanternPath, 1, lanternPath.length - 2, 2.2, 8, 1.9)
   return [
     {
-      caption: 'Night Bloom · an original botanical world',
+      caption: BRAND.name,
       sub: 'Six garden zones arranged like a flower around a central lake',
       pos: [V(0, 165, 230), V(140, 120, 120)],
       look: [V(0, 0, 10), V(0, 0, 0)],
@@ -35,30 +37,30 @@ export function buildTour() {
       night: 0,
     },
     {
-      caption: 'Bloom Terraces',
+      caption: zoneById('bloom').name,
       sub: 'The Ribbon Arcade: nine steel arches carrying 99 hanging baskets',
       pos: [V(60, 40, 120), up(avenue.toWorld(0, 0), 7), av.pos[0]],
       look: [V(0, 0, 70), up(avenue.toWorld(8, 0), 2), av.look[0]],
       duration: 5,
     },
-    { caption: 'Bloom Terraces', sub: 'Every flower is a real 3D model: petals, leaves and stems', ...av, duration: 13, ease: 'none' },
+    { caption: zoneById('bloom').name, sub: 'Every flower is a real 3D model: petals, leaves and stems', ...av, duration: 13, ease: 'none' },
     {
-      caption: 'Wingsong Conservatory',
+      caption: zoneById('wingsong').name,
       sub: 'A leaf-shaped glasshouse',
       pos: [up(avenue.toWorld(40, 0), 9), V(80, 30, 10), wingToWorld(-12, 0, 6), wingToWorld(2, 0, 2.2), inside.pos[0]],
       look: [V(60, 4, -30), wingToWorld(18, 0, 6), wingToWorld(18, 0, 4), wingToWorld(14, 0, 1.8), inside.look[0]],
       duration: 9,
     },
-    { caption: 'Wingsong Conservatory', sub: 'Hundreds of free-flying butterflies, each one clickable', ...inside, duration: 18, ease: 'none' },
+    { caption: zoneById('wingsong').name, sub: 'Hundreds of free-flying butterflies, each one clickable', ...inside, duration: 18, ease: 'none' },
     {
-      caption: 'Herbarium Walk',
+      caption: zoneById('herbarium').name,
       sub: 'A chahar bagh: four gardens around a fountain, quartered by water',
       pos: [wingToWorld(30, 0, 16), herbToWorld(60, 0, 22), herbToWorld(78, 0, 4.5)],
       look: [herbToWorld(100, 0, 0), herbToWorld(100, 0, 0), herbToWorld(100, 0, 1.5)],
       duration: 9,
     },
     {
-      caption: 'Herbarium Walk',
+      caption: zoneById('herbarium').name,
       sub: 'Fruit trees, parterres and labelled plant specimens',
       pos: [herbToWorld(84, 0, 4.5), herbToWorld(94, 0, 3.2), herbToWorld(106, 0, 3.2), herbToWorld(118, 0, 3.6)],
       look: [herbToWorld(110, 0, 2), herbToWorld(120, 0, 2.5), herbToWorld(128, 0, 4), herbToWorld(128, 0, 5)],
@@ -74,14 +76,14 @@ export function buildTour() {
       night: 0.55,
     },
     {
-      caption: 'Lantern Shore',
+      caption: zoneById('lantern').name,
       sub: 'Light installations that wake at dusk and respond to visitors',
       pos: [up(lanternPath.toWorld(0, 0), 8), shore.pos[0]],
       look: [up(lanternPath.toWorld(12, 0), 2), shore.look[0]],
       duration: 5,
       night: 1,
     },
-    { caption: 'Lantern Shore', sub: 'Seed lanterns, light reeds and moon lilies on the lake', ...shore, duration: 16, ease: 'none' },
+    { caption: zoneById('lantern').name, sub: 'Seed lanterns, light reeds and moon lilies on the lake', ...shore, duration: 16, ease: 'none' },
     {
       caption: 'A garden in the desert',
       sub: 'An oasis by day, framed by city lights at night',
@@ -90,7 +92,7 @@ export function buildTour() {
       duration: 11,
     },
     {
-      caption: 'Night Bloom',
+      caption: BRAND.name,
       sub: 'Explore it yourself',
       pos: [V(15, 25, 10), V(-40, 70, 120), V(0, 165, 230)],
       look: [V(150, 80, -600), lake, V(0, 0, 10)],

@@ -1,3 +1,5 @@
+import { BRAND } from '../brand'
+
 // Copies the WebGL canvas, adds a small wordmark and downloads a PNG.
 export function capturePhoto() {
   const src = document.querySelector('canvas')
@@ -15,12 +17,12 @@ export function capturePhoto() {
   ctx.shadowBlur = size * 0.4
   ctx.textAlign = 'right'
   ctx.textBaseline = 'bottom'
-  ctx.fillText('Night Bloom', out.width - pad, out.height - pad)
+  ctx.fillText(BRAND.name, out.width - pad, out.height - pad)
 
   out.toBlob((blob) => {
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `night-bloom-${Date.now()}.png`
+    a.download = `${BRAND.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}.png`
     a.click()
     setTimeout(() => URL.revokeObjectURL(a.href), 1000)
   })

@@ -13,4 +13,6 @@ export const rig = {
   walkTo() {
     return false
   },
+  lightShow() {},
+  stopShow() {},
 }

@@ -4,6 +4,8 @@ import { getWorld } from '../lib/world'
 import { SPECIES } from '../lib/species'
 import { BUTTERFLIES } from '../lib/butterflies'
 import Icon from './Icon'
+import { ctaFor } from '../brand'
+import { triggerCta } from '../world/BookingPins'
 
 function SculptureCard({ id }) {
   const s = getWorld().sculptures.find((sc) => sc.id === id)
@@ -85,6 +87,11 @@ function ZoneCard({ id }) {
       <h2>{z.name}</h2>
       <p className="tagline">{z.tagline}</p>
       <p>{z.description}</p>
+      {z.status === 'open' && (
+        <button className="btn primary cta-btn" onClick={() => triggerCta(z.id)}>
+          {ctaFor(z.id).label}
+        </button>
+      )}
       <p className={`status ${z.status}`}>{z.status === 'open' ? 'Open: enter to explore' : 'Opening soon. The flower carpet is planted; the garden inside is still being built.'}</p>
     </>
   )

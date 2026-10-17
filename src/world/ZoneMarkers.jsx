@@ -7,7 +7,8 @@ import { ZONES } from './plan'
 export default function ZoneMarkers() {
   const mode = useGarden((s) => s.mode)
   const focus = useGarden((s) => s.focus)
-  if (mode !== 'aerial') return null
+  const showOn = useGarden((s) => s.show !== null)
+  if (mode !== 'aerial' || showOn) return null
   return ZONES.map((z) => (
     <Html key={z.id} position={[z.center.x, z.center.y + z.pinHeight, z.center.z]} center zIndexRange={[10, 0]}>
       <button

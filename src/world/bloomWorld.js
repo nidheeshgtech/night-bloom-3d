@@ -41,7 +41,8 @@ const zones = ZONES.map((z, i) => {
     yaw = Math.atan2(-f.tx, -f.tz)
   }
   pos.y += EYE
-  return { ...z, spawn: { pos, yaw } }
+  // Same objects as ZONES so brand overrides (names, taglines) apply everywhere.
+  return Object.assign(z, { spawn: { pos, yaw } })
 })
 
 // ---------- Inspectable features (Bloom Terraces) ----------

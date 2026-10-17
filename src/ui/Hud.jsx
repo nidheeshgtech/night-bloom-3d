@@ -5,7 +5,9 @@ import { audio } from '../lib/audio'
 import { getWorld } from '../lib/world'
 import { capturePhoto } from './capture'
 import InfoPanel from './InfoPanel'
+import CtaNote from './CtaNote'
 import Icon from './Icon'
+import { BRAND } from '../brand'
 
 function Intro({ leaving, onGone }) {
   const ready = useGarden((s) => s.ready)
@@ -17,9 +19,9 @@ function Intro({ leaving, onGone }) {
   return (
     <div className={`intro ${leaving ? 'leaving' : ''}`} onTransitionEnd={() => leaving && onGone()}>
       <div className="intro-card">
-        <p className="eyebrow">Interactive WebGL garden</p>
-        <h1>Night Bloom</h1>
-        <p className="lede">Fly over thousands of living flowers, walk the paths, and stay for nightfall.</p>
+        <p className="eyebrow">{BRAND.eyebrow}</p>
+        <h1>{BRAND.name}</h1>
+        <p className="lede">{BRAND.lede}</p>
         {ready ? (
           <div className="intro-actions">
             <button className="btn primary" onClick={() => start(true)}>
@@ -35,7 +37,7 @@ function Intro({ leaving, onGone }) {
             <span>{progress < 100 ? `Growing the garden… ${progress}%` : 'Opening the gates…'}</span>
           </div>
         )}
-        <p className="fine">Original concept by Nidheesh. Not affiliated with any existing attraction.</p>
+        <p className="fine">{BRAND.fine}</p>
       </div>
     </div>
   )
@@ -80,6 +82,7 @@ export default function Hud() {
   }, [])
   const caption = useGarden((s) => s.caption)
   const here = useGarden((s) => s.here)
+  const showOn = useGarden((s) => s.show !== null)
 
   const toggleAudio = () => {
     audioOn ? audio.stop() : audio.start()
@@ -91,7 +94,7 @@ export default function Hud() {
       <div className="hud">
         <header className="brand">
           <span className="brand-mark" />
-          Night Bloom
+          {BRAND.name}
         </header>
         {caption && (
           <div className="caption" key={caption.title + caption.sub}>
@@ -126,7 +129,8 @@ export default function Hud() {
   const zones = world.zones || []
   const focused = zones.find((z) => z.id === focus)
   // Aerial world view lists zones; otherwise the inspectable features of the current zone.
-  const showZones = mode === 'aerial' && !focused && zones.length > 0
+  // Zone list from the air, or when walking between zones (lake, promenade, spokes).
+  const showZones = zones.length > 0 && ((mode === 'aerial' && !focused) || (mode === 'walk' && !here))
   const area = mode === 'walk' ? here : focused?.id
   const features = world.sculptures.filter((s) => s.chip !== false && (!s.zone || !area || s.zone === area))
   const canTravel = mode === 'aerial' || mode === 'walk' || mode === 'inspect'
@@ -137,7 +141,7 @@ export default function Hud() {
 
       <header className="brand">
         <span className="brand-mark" />
-        Night Bloom
+        {BRAND.name}
       </header>
       <PerfOverlay />
 
@@ -202,6 +206,11 @@ export default function Hud() {
               Back
             </button>
           )}
+          {(mode === 'aerial' || mode === 'walk') && world.tour && (
+            <button className={`btn ${showOn ? '' : 'show-btn'}`} onClick={showOn ? rig.stopShow : rig.lightShow}>
+              <Icon name={showOn ? 'close' : 'spark'} /> {showOn ? 'Stop show' : 'Light show'}
+            </button>
+          )}
           {mode === 'flying' && (
             <button className="btn" disabled>
               Flying…
@@ -224,6 +233,7 @@ export default function Hud() {
       </div>
 
       <InfoPanel />
+      <CtaNote />
     </div>
   )
 }

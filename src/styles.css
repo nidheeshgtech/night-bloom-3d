@@ -190,7 +190,7 @@ input:focus-visible {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: conic-gradient(#ff4f7b, #ffb02e, #4fc3ff, #b45cff, #ff4f7b);
+  background: var(--mark, conic-gradient(#ff4f7b, #ffb02e, #4fc3ff, #b45cff, #ff4f7b));
   box-shadow: 0 0 12px rgba(255, 184, 107, 0.7);
 }
 
@@ -598,5 +598,85 @@ input:focus-visible {
   from {
     opacity: 0;
     transform: translate(-50%, 10px);
+  }
+}
+
+/* Booking / enquiry call to action */
+.cta-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  animation: cta-bob 2.4s ease-in-out infinite;
+}
+
+.cta-pin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+@keyframes cta-bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.cta-btn {
+  width: 100%;
+  justify-content: center;
+  margin: 4px 0 12px;
+}
+
+.cta-note {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background: rgba(10, 6, 14, 0.55);
+  z-index: 40;
+}
+
+.cta-note-card {
+  position: relative;
+  max-width: 380px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--glass-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  line-height: 1.55;
+}
+
+.cta-note-card h2 {
+  margin: 6px 0 10px;
+}
+
+.cta-note-card p {
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
+
+.show-btn {
+  background: linear-gradient(120deg, rgba(255, 79, 163, 0.35), rgba(95, 224, 255, 0.35));
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 640px) {
+  .dock-row {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

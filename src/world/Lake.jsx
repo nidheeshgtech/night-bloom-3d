@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { QUAY_RADIUS, WATER_LEVEL, heightAt } from './terrain'
-import { pbrSet } from '../zone/materials'
+import { pbrSet, zoneUniforms } from '../zone/materials'
 
 // Tileable ripple normal map from integer-frequency sine waves.
 export function rippleTexture() {
@@ -78,13 +78,33 @@ export default function Lake() {
   const { water, wall, ripple } = useMemo(() => {
     const ripple = rippleTexture()
     const water = new THREE.MeshStandardMaterial({
-      color: '#0f3a44',
-      roughness: 0.05,
-      metalness: 0.1,
+      color: '#0d3540',
+      roughness: 0.04,
+      metalness: 0.15,
       normalMap: ripple,
-      normalScale: new THREE.Vector2(0.22, 0.22),
-      envMapIntensity: 1.3,
+      normalScale: new THREE.Vector2(0.25, 0.25),
+      envMapIntensity: 1.4,
     })
+    water.onBeforeCompile = (shader) => {
+      shader.uniforms.uTime = zoneUniforms.uTime
+      // Two ripple layers at unrelated scales and directions hide the tile repeat; colour
+      // shifts from deep teal face-on to sky-tinted at grazing angles.
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uTime;')
+        .replace(
+          '#include <normal_fragment_maps>',
+          `vec3 n1 = texture2D(normalMap, vNormalMapUv).xyz * 2.0 - 1.0;
+          vec3 n2 = texture2D(normalMap, vNormalMapUv * 0.37 + vec2(uTime * -0.0031, uTime * 0.0047)).xyz * 2.0 - 1.0;
+          vec3 mapN = normalize(vec3((n1.xy + n2.xy) * normalScale, n1.z * n2.z));
+          normal = normalize(tbn * mapN);`,
+        )
+        .replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+          float facing = abs(dot(normalize(vViewPosition), vec3(0.0, 0.0, 1.0)));
+          diffuseColor.rgb = mix(vec3(0.16, 0.3, 0.34), diffuseColor.rgb, smoothstep(0.1, 0.6, facing));`,
+        )
+    }
     const t = pbrSet('white_sandstone_bricks', 1)
     const wall = new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#d9cdb9', side: THREE.DoubleSide })
     return { water, wall, ripple }
@@ -102,6 +122,44 @@ export default function Lake() {
         <circleGeometry args={[QUAY_RADIUS + 0.05, 128]} />
       </mesh>
       <mesh geometry={quay} material={wall} receiveShadow />
+      <ShoreRing />
     </>
   )
+}
+
+// Soft, slowly breathing band of light water where the lake meets the quay.
+function ShoreRing() {
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        uniforms: { uTime: zoneUniforms.uTime, uNight: zoneUniforms.uNight },
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uNight;
+          varying vec2 vUv;
+          void main() {
+            float edge = smoothstep(0.0, 1.0, vUv.y);
+            float wave = 0.6 + 0.4 * sin(vUv.x * 900.0 + uTime * 0.8) * sin(vUv.x * 230.0 - uTime * 0.5);
+            float a = pow(edge, 3.0) * wave * 0.35 * (1.0 - uNight * 0.7);
+            gl_FragColor = vec4(vec3(0.85, 0.95, 0.95), a);
+          }`,
+      }),
+    [],
+  )
+  // Ring UVs: x around, y from inner (0) to the wall (1).
+  const geometry = useMemo(() => {
+    const g = new THREE.RingGeometry(QUAY_RADIUS - 1.6, QUAY_RADIUS, 256, 1)
+    const pos = g.attributes.position
+    const uv = g.attributes.uv
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i)
+      const y = pos.getY(i)
+      uv.setXY(i, (Math.atan2(y, x) / (Math.PI * 2)) + 0.5, (Math.hypot(x, y) - (QUAY_RADIUS - 1.6)) / 1.6)
+    }
+    return g
+  }, [])
+  return <mesh geometry={geometry} material={material} position-y={WATER_LEVEL + 0.01} rotation-x={-Math.PI / 2} renderOrder={2} />
 }

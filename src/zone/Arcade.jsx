@@ -65,14 +65,14 @@ function frameGeometry() {
   // Basket rims and hanger wires.
   for (const bk of baskets) {
     const p = new THREE.Vector3().setFromMatrixPosition(bk.matrix)
-    const rim = new THREE.TorusGeometry(0.21, 0.007, 5, 24)
+    const rim = new THREE.TorusGeometry(0.18, 0.006, 5, 24)
     rim.rotateX(Math.PI / 2)
-    rim.translate(p.x, p.y + 0.01, p.z)
+    rim.translate(p.x, p.y - 0.01, p.z)
     parts.push(plain(rim))
     const drop = bk.anchor.y - p.y
     for (let k = 0; k < 3; k++) {
       const a = (k / 3) * Math.PI * 2
-      const r = new THREE.Vector3(p.x + Math.cos(a) * 0.2, p.y + 0.01, p.z + Math.sin(a) * 0.2)
+      const r = new THREE.Vector3(p.x + Math.cos(a) * 0.17, p.y - 0.01, p.z + Math.sin(a) * 0.17)
       const top = drop > 0.05 ? bk.anchor : new THREE.Vector3(p.x, p.y - 0.18, p.z)
       const wire = new THREE.CylinderGeometry(0.004, 0.004, r.distanceTo(top), 4)
       wire.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), top.clone().sub(r).normalize()))

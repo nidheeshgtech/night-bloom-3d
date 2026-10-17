@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Environment } from '@react-three/drei'
+import { Environment, useEnvironment } from '@react-three/drei'
+import SkyBackdrop, { skyUniforms } from './SkyBackdrop'
 import * as THREE from 'three'
 import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
@@ -11,7 +12,7 @@ import { bulbMat, shadows, zoneUniforms } from './materials'
 // Sun direction measured from the HDRI's brightest pixel, so shadows match the visible sun.
 export const SUN_DIR = new THREE.Vector3(0.704, 0.486, 0.517).normalize()
 
-const DAY = { env: 0.75, bg: 1, sun: 3.2, sunColor: new THREE.Color('#ffe2bf'), fog: new THREE.Color('#cdd9e6'), lamp: 0, bulb: 0 }
+const DAY = { env: 0.9, bg: 1.05, sun: 3.4, sunColor: new THREE.Color('#ffe2bf'), fog: new THREE.Color('#cdd9e6'), lamp: 0, bulb: 0 }
 const NIGHT = { env: 0.06, bg: 0.04, sun: 0.4, sunColor: new THREE.Color('#9db0ff'), fog: new THREE.Color('#0b1120'), lamp: 22, bulb: 5 }
 
 function Stars() {
@@ -48,6 +49,7 @@ export default function ZoneLighting() {
     return () => (gl.shadowMap.autoUpdate = true)
   }, [gl])
   const quality = useGarden((s) => s.quality)
+  const hdri = useEnvironment({ files: `${import.meta.env.BASE_URL}assets/hdri/autumn_field_puresky_2k.hdr` })
   const night = useRef(useGarden.getState().night)
   const lampLights = useRef([])
 
@@ -108,7 +110,7 @@ export default function ZoneLighting() {
     const t = night.current
     const lerp = THREE.MathUtils.lerp
     scene.environmentIntensity = lerp(DAY.env, NIGHT.env, t)
-    scene.backgroundIntensity = lerp(DAY.bg, NIGHT.bg, t)
+    skyUniforms.uIntensity.value = lerp(DAY.bg, NIGHT.bg, t)
     sun.intensity = lerp(DAY.sun, NIGHT.sun, t)
     sun.color.lerpColors(DAY.sunColor, NIGHT.sunColor, t)
     if (scene.fog) scene.fog.color.lerpColors(DAY.fog, NIGHT.fog, t)
@@ -122,7 +124,8 @@ export default function ZoneLighting() {
 
   return (
     <>
-      <Environment files={`${import.meta.env.BASE_URL}assets/hdri/autumn_field_puresky_2k.hdr`} background />
+      <Environment map={hdri} />
+      <SkyBackdrop texture={hdri} />
       <fogExp2 attach="fog" args={['#cdd9e6', 0.0011]} />
       <primitive object={sun} />
       <primitive object={sun.target} />

@@ -21,7 +21,7 @@ function glide(path, s0, s1, h, ahead, lookH = h - 0.4, step = 4) {
 // time-of-day target and a caption. Segments chain from wherever the previous one ended.
 export function buildTour() {
   const lake = V(0, 0, 0)
-  const av = glide(avenue, 2, 44, 2.3, 9)
+  const av = glide(avenue, 2, 36, 2.3, 9)
   const inside = glide(innerPath, 7, innerPath.length - 4, 1.9, 6, 1.5, 3)
   const shore = glide(lanternPath, 1, lanternPath.length - 2, 2.2, 8, 1.9)
   return [
@@ -40,29 +40,30 @@ export function buildTour() {
       look: [V(0, 0, 70), up(avenue.toWorld(8, 0), 2), av.look[0]],
       duration: 5,
     },
-    { caption: 'Bloom Terraces', sub: 'Every flower is a real 3D model: petals, leaves and stems', ...av, duration: 15, ease: 'none' },
+    { caption: 'Bloom Terraces', sub: 'Every flower is a real 3D model: petals, leaves and stems', ...av, duration: 13, ease: 'none' },
     {
       caption: 'Wingsong Conservatory',
       sub: 'A leaf-shaped glasshouse',
-      pos: [up(avenue.toWorld(44, 0), 12), V(80, 30, 10), wingToWorld(-12, 0, 6), wingToWorld(2, 0, 2.2), inside.pos[0]],
+      pos: [up(avenue.toWorld(40, 0), 9), V(80, 30, 10), wingToWorld(-12, 0, 6), wingToWorld(2, 0, 2.2), inside.pos[0]],
       look: [V(60, 4, -30), wingToWorld(18, 0, 6), wingToWorld(18, 0, 4), wingToWorld(14, 0, 1.8), inside.look[0]],
       duration: 9,
     },
     { caption: 'Wingsong Conservatory', sub: 'Hundreds of free-flying butterflies, each one clickable', ...inside, duration: 18, ease: 'none' },
     {
-      caption: 'Sunset',
-      sub: 'Time of day changes the whole world',
+      caption: 'Golden hour',
+      sub: 'Light and atmosphere change with the time of day',
       pos: [wingToWorld(40, 0, 18), V(30, 60, 10), V(-50, 45, 50)],
       look: [lake, lake, V(-80, 0, 45)],
       duration: 9,
-      night: 1,
+      night: 0.55,
     },
     {
       caption: 'Lantern Shore',
       sub: 'Light installations that wake at dusk and respond to visitors',
       pos: [up(lanternPath.toWorld(0, 0), 8), shore.pos[0]],
       look: [up(lanternPath.toWorld(12, 0), 2), shore.look[0]],
-      duration: 4,
+      duration: 5,
+      night: 1,
     },
     { caption: 'Lantern Shore', sub: 'Seed lanterns, light reeds and moon lilies on the lake', ...shore, duration: 16, ease: 'none' },
     {

@@ -280,6 +280,14 @@ export function basketPlant(seed, { trailers = 7 } = {}) {
     const dir = V(Math.cos(a) * Math.cos(e), Math.sin(e), Math.sin(a) * Math.cos(e))
     leaves.push({ p: dir.clone().multiplyScalar(0.15 + rand() * 0.09), dir: dir.clone().add(V(0, 0.2, 0)), len: 0.05 + rand() * 0.02, tone: leafTone(rand) })
   }
+  // Skirt of foliage and blooms spilling over the rim so the bowl hides behind growth.
+  for (let i = 0; i < 26; i++) {
+    const a = (i / 26) * Math.PI * 2 + rand() * 0.2
+    const out_ = V(Math.cos(a), 0, Math.sin(a))
+    const p = out_.clone().multiplyScalar(0.2).add(V(0, -0.02 - rand() * 0.1, 0))
+    leaves.push({ p, dir: out_.clone().add(V(0, -0.5 - rand() * 0.6, 0)), len: 0.06 + rand() * 0.02, tone: leafTone(rand) })
+    if (i % 2 === 0) blooms.push({ p: p.clone().addScaledVector(out_, 0.04).add(V(0, -0.03, 0)), face: out_.clone().add(V(0, -0.2, 0)), roll: rand() * 6 })
+  }
   const trails = []
   for (let i = 0; i < trailers; i++) {
     const a = (i / trailers) * Math.PI * 2 + rand() * 0.5
@@ -317,12 +325,12 @@ export function basketPlant(seed, { trailers = 7 } = {}) {
 // Coir-lined hanging basket bowl, open at the top. Local origin = soil surface centre.
 export function basketBowl() {
   const b = new Builder()
-  const R = 0.21
+  const R = 0.18
   b.grid(6, 18, (i, j) => {
     const e = (i / 6) * (Math.PI / 2)
     const a = (j / 18) * Math.PI * 2
     const r = R * Math.cos(e)
-    return { p: V(Math.cos(a) * r, -Math.sin(e) * R * 0.85 + 0.01, Math.sin(a) * r), uv: uv('coir', j / 18, i / 6) }
+    return { p: V(Math.cos(a) * r, -Math.sin(e) * R * 0.85 - 0.02, Math.sin(a) * r), uv: uv('coir', j / 18, i / 6) }
   })
   return b.toGeometry()
 }

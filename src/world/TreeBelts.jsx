@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import Instances from '../zone/Instances'
 import Palms from '../zone/Palms'
-import { treeGeometry } from '../zone/foliage'
+import { cypressGeometry, treeGeometry } from '../zone/foliage'
 import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
 import { heightAt } from './terrain'
@@ -25,7 +25,8 @@ export const TREES = (() => {
       const n = room > 6 ? 2 : 1
       for (let k = 0; k < n; k++) {
         const lateral = (rand() * 2 - 1) * room
-        out.push({ pos: at(g + lateral / r, r + (rand() - 0.5) * 4), s: 0.9 + rand() * 0.7, k: out.length % 3 })
+        // Every fourth tree in the belts is a cypress.
+        out.push({ pos: at(g + lateral / r, r + (rand() - 0.5) * 4), s: 0.9 + rand() * 0.7, k: out.length % 4 })
       }
     }
   }
@@ -49,12 +50,12 @@ export const PROMENADE_PALMS = (() => {
 export default function TreeBelts() {
   // Background trees only cast shadows on high quality.
   const high = useGarden((s) => s.quality === 'high')
-  const geos = useMemo(() => [treeGeometry(21), treeGeometry(22), treeGeometry(23)], [])
+  const geos = useMemo(() => [treeGeometry(21), treeGeometry(22), treeGeometry(23), cypressGeometry(24)], [])
   const lists = useMemo(() => {
     const rand = mulberry32(31)
-    return [0, 1, 2].map((k) =>
+    return [0, 1, 2, 3].map((k) =>
       TREES.filter((t) => t.k === k).map((t) =>
-        new THREE.Matrix4().compose(V(t.pos.x, t.pos.y - 0.1, t.pos.z), new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), rand() * 6), V(t.s, t.s * (0.9 + rand() * 0.3), t.s)),
+        new THREE.Matrix4().compose(V(t.pos.x, t.pos.y - 0.1, t.pos.z), new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), rand() * 6), k === 3 ? V(0.9, t.s, 0.9) : V(t.s, t.s * (0.9 + rand() * 0.3), t.s)),
       ),
     )
   }, [])

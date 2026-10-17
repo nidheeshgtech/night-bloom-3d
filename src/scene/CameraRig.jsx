@@ -6,6 +6,7 @@ import gsap from 'gsap'
 import { useGarden } from '../lib/store'
 import { input, player, rig } from '../lib/player'
 import { shared } from '../lib/flowerMaterial'
+import { audio } from '../lib/audio'
 import { getWorld } from '../lib/world'
 
 const EYE = 1.7
@@ -118,6 +119,11 @@ export default function CameraRig() {
       let prevPos = camera.position.clone()
       let prevLook = currentLook()
       set({ mode: 'tour', selected: null, focus: null, caption: null })
+      // The tour starts from a click, so the browser allows sound.
+      if (!useGarden.getState().audio) {
+        audio.start()
+        set({ audio: true })
+      }
       segs.forEach((seg) => {
         const pc = new THREE.CatmullRomCurve3([prevPos, ...seg.pos], false, 'centripetal')
         const lc = new THREE.CatmullRomCurve3([prevLook, ...seg.look], false, 'centripetal')

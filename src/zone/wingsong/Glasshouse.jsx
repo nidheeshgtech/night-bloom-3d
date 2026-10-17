@@ -102,13 +102,13 @@ function ribGeometry() {
   const along = (fn, n) => Array.from({ length: n + 1 }, (_, i) => fn(i / n))
   // Midrib ridge beam.
   const mid = along((t) => GH.a0 + (A_END - GH.a0) * t, 60)
-  parts.push(sweepBar(mid.map((a) => shellPoint(a, 0, 0.08)), mid.map((a) => shellNormal(a, 0)), 0.34, 0.2))
+  parts.push(sweepBar(mid.map((a) => shellPoint(a, 0, 0.06)), mid.map((a) => shellNormal(a, 0)), 0.22, 0.14))
   // Lateral ribs sweeping forward and down like leaf veins.
-  for (let a0 = GH.a0 + 1.6; a0 < GH.L - 5; a0 += 2.6) {
+  for (let a0 = GH.a0 + 1.6; a0 < GH.L - 5; a0 += 3.2) {
     for (const side of [-1, 1]) {
       const ts = along((t) => t, 18)
       const av = ts.map((t) => [Math.min(A_END - 0.5, a0 + t * 3.4), side * Math.min(0.995, t)])
-      parts.push(sweepBar(av.map(([a, v]) => shellPoint(a, v, 0.05)), av.map(([a, v]) => shellNormal(a, Math.max(-0.98, Math.min(0.98, v)))), 0.15, 0.13))
+      parts.push(sweepBar(av.map(([a, v]) => shellPoint(a, v, 0.05)), av.map(([a, v]) => shellNormal(a, Math.max(-0.98, Math.min(0.98, v)))), 0.075, 0.08))
     }
   }
   // Ground beam around the perimeter.
@@ -131,8 +131,8 @@ let glassMat = null
 function glassMaterial() {
   if (glassMat) return glassMat
   glassMat = new THREE.MeshStandardMaterial({
-    color: '#d7ece6',
-    roughness: 0.04,
+    color: '#cfe8dc',
+    roughness: 0.02,
     metalness: 0,
     transparent: true,
     depthWrite: false,
@@ -146,9 +146,9 @@ function glassMaterial() {
       '#include <lights_fragment_begin>',
       `float fres = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 3.0);
       vec2 cell = abs(fract(vUv * vec2(46.0, 26.0)) - 0.5);
-      float mullion = 1.0 - smoothstep(0.0, 0.035, min(cell.x, cell.y));
-      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.06, 0.05, 0.04), mullion);
-      diffuseColor.a = max(mix(0.07, 0.55, fres), mullion * 0.85);
+      float mullion = 1.0 - smoothstep(0.0, 0.018, min(cell.x, cell.y));
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.32, 0.3, 0.26), mullion);
+      diffuseColor.a = max(mix(0.035, 0.42, fres), mullion * 0.45);
       #include <lights_fragment_begin>`,
     )
   }

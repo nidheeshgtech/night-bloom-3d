@@ -95,6 +95,12 @@ export function treeGeometry(seed) {
     const c = top.clone().add(V(Math.cos(a) * reach, 0.5 + rand() * 1.1 - reach * 0.15, Math.sin(a) * reach))
     b.tube([top, top.clone().lerp(c, 0.5).add(V(0, 0.3, 0)), c], [0.12, 0.08, 0.05], 5, [0.14, 0.11, 0.08])
     const r = 1.0 + rand() * 0.7
+    // Dark core so light never shows straight through the crown.
+    b.grid(4, 7, (i, j) => {
+      const e = (i / 4) * Math.PI - Math.PI / 2
+      const az = (j / 7) * Math.PI * 2
+      return { p: c.clone().add(V(Math.cos(e) * Math.cos(az) * r * 0.78, Math.sin(e) * r * 0.55, Math.cos(e) * Math.sin(az) * r * 0.78)), c: CORE }
+    })
     for (let i = 0; i < 40; i++) {
       const e = Math.asin(rand() * 2 - 1)
       const az = rand() * Math.PI * 2
@@ -178,4 +184,27 @@ export function rockGeometry(seed) {
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
   g.computeVertexNormals()
   return g
+}
+
+// Italian cypress: tall narrow flame of dark foliage for skyline variety.
+export function cypressGeometry(seed) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  const H = 7 + rand() * 3
+  const R = 0.85
+  const prof = (t) => R * Math.pow(Math.sin(Math.PI * Math.min(1, 0.08 + t * 0.95)), 0.8) * (1 - t * 0.35)
+  b.grid(8, 8, (i, j) => {
+    const t = i / 8
+    const a = (j / 8) * Math.PI * 2
+    return { p: V(Math.cos(a) * prof(t) * 0.8, 0.3 + t * H, Math.sin(a) * prof(t) * 0.8), c: CORE }
+  })
+  for (let i = 0; i < 160; i++) {
+    const t = rand()
+    const a = rand() * Math.PI * 2
+    const n = V(Math.cos(a), 0.35, Math.sin(a)).normalize()
+    const p = V(Math.cos(a) * prof(t), 0.3 + t * H, Math.sin(a) * prof(t))
+    const v = 0.55 + rand() * 0.25
+    card(b, p, n, 0.7, 'foliage', [v * 0.8, v, v * 0.8], rand)
+  }
+  return b.toGeometry()
 }

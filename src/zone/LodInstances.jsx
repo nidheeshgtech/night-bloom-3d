@@ -3,6 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { plantMaterial, plantDepthMaterial } from './materials'
 
+// Plants beyond this distance aren't drawn; the ground's flower carpet takes over.
+export const PLANT_FAR = { high: 45, low: 28 }
+
 // Draws nothing in the main pass; exists only to cast shadows from cheap geometry.
 const shadowOnly = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })
 
@@ -10,7 +13,7 @@ const shadowOnly = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: 
 // camera has moved more than a metre; each variant/LOD pair is one draw call.
 // shadow: 'none' | 'proxy' (all instances cast from the far LOD geometry) | 'lod0'.
 // stride > 1 draws only every n-th item (low quality thinning).
-export default function LodInstances({ variants, items, near, shadow = 'proxy', stride = 1 }) {
+export default function LodInstances({ variants, items, near, far = Infinity, shadow = 'proxy', stride = 1 }) {
   const groups = useMemo(() => {
     return variants.map((v, vi) => {
       const list = items.filter((it) => it.variant === vi)
@@ -46,7 +49,7 @@ export default function LodInstances({ variants, items, near, shadow = 'proxy', 
   const last = useRef(new THREE.Vector3(Infinity, 0, 0))
   useEffect(() => {
     last.current.set(Infinity, 0, 0)
-  }, [near, groups, stride])
+  }, [near, far, groups, stride])
 
   useLayoutEffect(() => () => groups.forEach((g) => [g.lod0, g.lod1, g.proxy].forEach((m) => m?.dispose())), [groups])
 
@@ -55,6 +58,7 @@ export default function LodInstances({ variants, items, near, shadow = 'proxy', 
     if (c.distanceToSquared(last.current) < 1) return
     last.current.copy(c)
     const near2 = near * near
+    const far2 = far * far
     for (const g of groups) {
       let n0 = 0
       let n1 = 0
@@ -64,7 +68,9 @@ export default function LodInstances({ variants, items, near, shadow = 'proxy', 
       const c1 = g.lod1.instanceColor.array
       for (let i = 0; i < g.list.length; i += stride) {
         const it = g.list[i]
-        if (g.pos[i].distanceToSquared(c) < near2) {
+        const d2 = g.pos[i].distanceToSquared(c)
+        if (d2 > far2) continue
+        if (d2 < near2) {
           it.matrix.toArray(m0, n0 * 16)
           it.color.toArray(c0, n0 * 3)
           n0++

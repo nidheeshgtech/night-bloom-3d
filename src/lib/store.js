@@ -5,7 +5,8 @@ const small = window.innerWidth < 768
 
 export const useGarden = create((set) => ({
   mode: 'intro', // intro | aerial | flying | walk | inspect
-  selected: null, // { kind: 'sculpture', id } | { kind: 'flower', index, species }
+  selected: null, // { kind: 'sculpture' | 'zone', id } | { kind: 'flower', index, species }
+  focus: null, // zone id the aerial camera is framing
   discovered: [], // species indices the visitor has clicked
   night: 0, // 0 = golden hour, 1 = night
   quality: coarse || small ? 'low' : 'high',

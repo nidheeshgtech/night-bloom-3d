@@ -10,7 +10,6 @@ import { bulbMat, zoneUniforms } from './materials'
 
 // Sun direction measured from the HDRI's brightest pixel, so shadows match the visible sun.
 export const SUN_DIR = new THREE.Vector3(0.704, 0.486, 0.517).normalize()
-const CENTER = new THREE.Vector3(0, 0, 1)
 
 const DAY = { env: 0.75, bg: 1, sun: 3.2, sunColor: new THREE.Color('#ffe2bf'), fog: new THREE.Color('#cdd9e6'), lamp: 0, bulb: 0 }
 const NIGHT = { env: 0.06, bg: 0.04, sun: 0.4, sunColor: new THREE.Color('#9db0ff'), fog: new THREE.Color('#0b1120'), lamp: 22, bulb: 5 }
@@ -36,20 +35,17 @@ function Stars() {
 
 export default function ZoneLighting() {
   const scene = useThree((s) => s.scene)
+  const controls = useThree((s) => s.controls)
+  const shadowHalf = useRef(0)
   const quality = useGarden((s) => s.quality)
   const night = useRef(useGarden.getState().night)
   const lampLights = useRef([])
 
   const sun = useMemo(() => {
     const l = new THREE.DirectionalLight('#ffe2bf', DAY.sun)
-    l.position.copy(CENTER).addScaledVector(SUN_DIR, 70)
-    l.target.position.copy(CENTER)
     l.castShadow = true
-    const cam = l.shadow.camera
-    cam.left = cam.bottom = -30
-    cam.right = cam.top = 30
-    cam.near = 20
-    cam.far = 130
+    l.shadow.camera.near = 10
+    l.shadow.camera.far = 320
     l.shadow.bias = -0.0002
     l.shadow.normalBias = 0.025
     return l
@@ -68,6 +64,24 @@ export default function ZoneLighting() {
   }, [])
 
   useFrame((state, delta) => {
+    // Shadow frustum follows what the visitor is looking at, sized to the camera distance.
+    const mode = useGarden.getState().mode
+    const cam = state.camera
+    const focus = mode === 'walk' || mode === 'flying' || !controls ? cam.position : controls.target
+    const half = THREE.MathUtils.clamp(cam.position.distanceTo(focus) * 0.5, 28, 120)
+    const sc = sun.shadow.camera
+    if (Math.abs(half - shadowHalf.current) > shadowHalf.current * 0.08) {
+      shadowHalf.current = half
+      sc.left = sc.bottom = -half
+      sc.right = sc.top = half
+      sc.updateProjectionMatrix()
+    }
+    const texel = (2 * shadowHalf.current) / sun.shadow.mapSize.x
+    const fx = Math.round(focus.x / texel) * texel
+    const fz = Math.round(focus.z / texel) * texel
+    sun.target.position.set(fx, 0, fz)
+    sun.position.set(fx, 0, fz).addScaledVector(SUN_DIR, 150)
+
     const target = useGarden.getState().night
     night.current += (target - night.current) * Math.min(1, delta * 3)
     const t = night.current
@@ -86,7 +100,7 @@ export default function ZoneLighting() {
   return (
     <>
       <Environment files="/assets/hdri/autumn_field_puresky_2k.hdr" background />
-      <fogExp2 attach="fog" args={['#c9d3df', 0.0042]} />
+      <fogExp2 attach="fog" args={['#cdd9e6', 0.0017]} />
       <primitive object={sun} />
       <primitive object={sun.target} />
       {lightSpots.map((p, i) => (

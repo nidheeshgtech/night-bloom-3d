@@ -14,16 +14,18 @@ import Perf from './scene/Perf'
 import Hud from './ui/Hud'
 import { useGarden } from './lib/store'
 import BotanyPreview from './zone/BotanyPreview'
-import ArcadeScene from './zone/ArcadeScene'
+import WorldScene from './world/WorldScene'
 import ZoneEffects from './zone/ZoneEffects'
-import { arcadeWorld } from './zone/arcadeWorld'
+import { bloomWorld } from './world/bloomWorld'
 import { islandWorld } from './lib/islandWorld'
 import { setWorld } from './lib/world'
 
-const ZONE = new URLSearchParams(window.location.search).get('zone')
-const world = ZONE === 'arcade' ? arcadeWorld : islandWorld
+const params = new URLSearchParams(window.location.search)
+const ZONE = params.get('zone')
+// The first prototype (floating island) stays available at ?world=island for comparison.
+const world = params.get('world') === 'island' ? islandWorld : bloomWorld
 setWorld(world)
-const isZone = world.id === 'arcade'
+const isZone = world.id === 'bloom'
 
 export default function App() {
   if (ZONE === 'botany') {
@@ -49,7 +51,7 @@ export default function App() {
       >
         <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(maxDpr)} />
         {isZone ? (
-          <ArcadeScene />
+          <WorldScene />
         ) : (
           <>
             <Atmosphere />

@@ -82,8 +82,11 @@ export default function CameraRig() {
       set({ mode })
     }
 
+    // Enter the focused zone (or the default spawn) at eye level.
     rig.enter = () => {
-      const { pos, yaw } = world.spawn
+      const zone = world.zones?.find((z) => z.id === useGarden.getState().focus)
+      const { pos, yaw } = zone ? zone.spawn : world.spawn
+      set({ selected: null })
       fly(pos.clone(), pos.clone().add(forward(yaw, 0).multiplyScalar(10)), {
         duration: 3.4,
         arc: 12,
@@ -91,8 +94,19 @@ export default function CameraRig() {
       })
     }
 
+    // Frame one zone from the lake side, then orbit around it.
+    rig.focusZone = (id) => {
+      if (useGarden.getState().mode === 'flying') return
+      const zone = world.zones.find((z) => z.id === id)
+      const target = zone.center.clone().setY(zone.center.y + 1)
+      const out = new THREE.Vector3(zone.dir.x, 0, zone.dir.y)
+      const pos = target.clone().addScaledVector(out, -58).setY(target.y + 42)
+      set({ focus: id, selected: { kind: 'zone', id } })
+      fly(pos, target, { duration: 2.6, arc: 10, onDone: () => toOrbit(target, 'aerial') })
+    }
+
     rig.toAerial = () => {
-      set({ selected: null })
+      set({ selected: null, focus: null })
       const { target, distance, height } = world.aerial
       const dir = camera.position.clone().sub(target).setY(0)
       if (dir.lengthSq() < 1) dir.set(1, 0, 1)

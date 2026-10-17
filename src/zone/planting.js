@@ -43,11 +43,11 @@ function xz(v) {
 
 // ---------- Bed planting: rows parallel to the path, drifts of colour along it ----------
 
-const PETUNIA_DRIFTS = ['#ff4f9a', '#ffffff', '#b45ce0', '#ff86bf', '#e2306e', '#f2f2ff', '#9b4fd6']
-const MARIGOLD_DRIFTS = ['#ffb000', '#ff6a00', '#ffcc1a']
-const DAISY_DRIFTS = ['#ffffff', '#e4d8ff', '#a678e0']
+export const PETUNIA_DRIFTS = ['#ff4f9a', '#ffffff', '#b45ce0', '#ff86bf', '#e2306e', '#f2f2ff', '#9b4fd6']
+export const MARIGOLD_DRIFTS = ['#ffb000', '#ff6a00', '#ffcc1a']
+export const DAISY_DRIFTS = ['#ffffff', '#e4d8ff', '#a678e0']
 
-function drift(list, s, len, side) {
+export function drift(list, s, len, side) {
   const k = Math.floor((s + 2.5 * Math.sin(s * 0.23 + side)) / len)
   return list[((k % list.length) + list.length) % list.length]
 }

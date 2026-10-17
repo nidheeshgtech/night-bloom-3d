@@ -36,6 +36,19 @@ function SculptureCard({ id }) {
   )
 }
 
+function ZoneCard({ id }) {
+  const z = getWorld().zones.find((zone) => zone.id === id)
+  return (
+    <>
+      <p className="eyebrow">{z.theme}</p>
+      <h2>{z.name}</h2>
+      <p className="tagline">{z.tagline}</p>
+      <p>{z.description}</p>
+      <p className={`status ${z.status}`}>{z.status === 'open' ? 'Open: enter to explore' : 'Planned for a later phase. Gate, hedges and borders are in place.'}</p>
+    </>
+  )
+}
+
 function FlowerCard({ species }) {
   const discovered = useGarden((s) => s.discovered)
   const sp = SPECIES[species]
@@ -89,13 +102,15 @@ export default function InfoPanel() {
   if (!selected) return null
 
   const close = () => (mode === 'inspect' ? rig.back() : useGarden.setState({ selected: null }))
+  const body =
+    selected.kind === 'sculpture' ? <SculptureCard id={selected.id} /> : selected.kind === 'zone' ? <ZoneCard id={selected.id} /> : <FlowerCard species={selected.species} />
 
   return (
     <aside className="panel" aria-live="polite">
       <button className="icon-btn panel-close" onClick={close} aria-label="Close">
         <Icon name="close" />
       </button>
-      {selected.kind === 'sculpture' ? <SculptureCard id={selected.id} /> : <FlowerCard species={selected.species} />}
+      {body}
     </aside>
   )
 }

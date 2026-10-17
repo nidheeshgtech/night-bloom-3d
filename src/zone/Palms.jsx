@@ -1,10 +1,10 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import * as THREE from 'three'
 import { Builder } from './botany/builder'
 import { uv } from './botany/atlas'
 import { mulberry32 } from '../lib/random'
 import { pathToWorld } from './layout'
-import { plantMaterial, plantDepthMaterial } from './materials'
+import Instances from './Instances'
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z)
 
@@ -61,29 +61,24 @@ export const PALMS = [
   { s: 27.5, d: -9.5, h: 6.8 },
   { s: 40.5, d: 9.8, h: 7.4 },
   { s: 45.5, d: -10.2, h: 6.1 },
-]
+].map((p) => ({ pos: pathToWorld(p.s, p.d), h: p.h }))
 
-export default function Palms() {
-  const geos = useMemo(() => [palmGeometry(3, 6.5), palmGeometry(9, 6.5)], [])
-  const refs = [useRef(), useRef()]
+let geos = null
+const palmGeos = () => (geos ??= [palmGeometry(3, 6.5), palmGeometry(9, 6.5)])
+
+// items: [{ pos: Vector3, h: height in metres }]
+export default function Palms({ items = PALMS }) {
   const lists = useMemo(
     () =>
       [0, 1].map((k) =>
-        PALMS.filter((_, i) => i % 2 === k).map((p, i) => {
-          const pos = pathToWorld(p.s, p.d)
-          const s = p.h / 6.5
-          return new THREE.Matrix4().compose(pos, new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), i * 2.1 + k), V(s, s, s))
-        }),
+        items
+          .filter((_, i) => i % 2 === k)
+          .map((p, i) => {
+            const s = p.h / 6.5
+            return new THREE.Matrix4().compose(p.pos, new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), i * 2.1 + k), V(s, s, s))
+          }),
       ),
-    [],
+    [items],
   )
-  useLayoutEffect(() => {
-    lists.forEach((list, k) => {
-      list.forEach((m, i) => refs[k].current.setMatrixAt(i, m))
-      refs[k].current.instanceMatrix.needsUpdate = true
-      refs[k].current.computeBoundingSphere()
-      refs[k].current.customDepthMaterial = plantDepthMaterial()
-    })
-  })
-  return geos.map((g, k) => <instancedMesh key={k} ref={refs[k]} args={[g, plantMaterial(), lists[k].length]} castShadow receiveShadow />)
+  return palmGeos().map((g, k) => <Instances key={k} geometry={g} matrices={lists[k]} />)
 }

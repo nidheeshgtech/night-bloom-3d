@@ -115,7 +115,9 @@ function Instanced({ geometry, material, matrices, castShadow = true, depth }) {
 }
 
 export default function Arcade() {
-  const near = useGarden((s) => (s.quality === 'high' ? 10 : 6))
+  const high = useGarden((s) => s.quality === 'high')
+  const near = high ? 10 : 6
+  const far = high ? 110 : 60
   const lib = getLibrary()
   const frame = useMemo(frameGeometry, [])
   const vines = useMemo(vineGeometry, [])
@@ -152,8 +154,8 @@ export default function Arcade() {
       <Instanced geometry={lib.bowl} material={plantMaterial()} matrices={bowls} depth={plantDepthMaterial()} />
       <Instanced geometry={boxGeo} material={concreteMat} matrices={footings} />
       <Instanced geometry={bulbGeo} material={bulbMat} matrices={bulbs} castShadow={false} />
-      <LodInstances variants={lib.basket} items={baskets} near={near} shadow="proxy" />
-      <LodInstances variants={lib.pot} items={potPlants} near={near} shadow="proxy" />
+      <LodInstances variants={lib.basket} items={baskets} near={near} far={far} shadow="proxy" />
+      <LodInstances variants={lib.pot} items={potPlants} near={near} far={far} shadow="proxy" />
     </>
   )
 }

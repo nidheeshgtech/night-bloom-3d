@@ -13,8 +13,8 @@ const SUN = V(0.704, 0.486, 0.517)
 export function petuniaBloom(b, m, { detail, rand }) {
   const R = 0.036
   const D = 0.03
-  const seg = detail ? 4 : 2
-  const rings = detail ? 4 : 2
+  const seg = detail ? 4 : 1
+  const rings = detail ? 4 : 1
   const r0 = 0.08
   const phase = rand() * 10
   for (let k = 0; k < 5; k++) {
@@ -100,12 +100,13 @@ export function daisyBloom(b, m, { detail, rand }) {
     }, m)
   }
   // Disc: navy centre, pollen-gold rim.
-  const discSeg = detail ? 10 : 6
-  b.grid(3, discSeg, (i, j) => {
-    const r = (i / 3) * 0.0075
+  const discSeg = detail ? 10 : 5
+  const discRings = detail ? 3 : 1
+  b.grid(discRings, discSeg, (i, j) => {
+    const r = (i / discRings) * 0.0075
     const a = (j / discSeg) * Math.PI * 2
-    const c = i < 2 ? [0.1, 0.09, 0.32] : [0.75, 0.62, 0.2]
-    return { p: V(Math.cos(a) * r, 0.0045 * (1 - (i / 3) ** 2), Math.sin(a) * r), c }
+    const c = i < discRings * 0.67 ? [0.1, 0.09, 0.32] : [0.75, 0.62, 0.2]
+    return { p: V(Math.cos(a) * r, 0.0045 * (1 - (i / discRings) ** 2), Math.sin(a) * r), c }
   }, m)
 }
 

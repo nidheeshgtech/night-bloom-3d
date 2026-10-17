@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { MASK_EXTENT } from './layout'
-import { getMask } from './mask'
+import { MASK_EXTENT, getMasks } from './mask'
+import { TERRAIN_GLSL } from '../world/terrain'
 import { zoneUniforms } from './materials'
 import { useGarden } from '../lib/store'
 
@@ -32,7 +32,7 @@ export default function Grass() {
       uCell: { value: cell },
       uN: { value: side },
       uRadius: { value: radius },
-      uMask: { value: getMask() },
+      uMask: { value: getMasks().mask },
       uTime: zoneUniforms.uTime,
     }
     const m = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, roughness: 0.8 })
@@ -57,9 +57,7 @@ export default function Grass() {
             p3 += dot(p3, p3.yzx + 33.33);
             return fract((p3.x + p3.y) * p3.z);
           }
-          float terrain(vec2 p) {
-            return 0.22 * sin(p.x * 0.08) * cos(p.y * 0.07) + 0.12 * sin((p.x + p.y) * 0.13);
-          }`,
+          ${TERRAIN_GLSL}`,
         )
         .replace(
           '#include <beginnormal_vertex>',

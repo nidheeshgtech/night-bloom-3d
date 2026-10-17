@@ -34,7 +34,7 @@ function PerfOverlay() {
 }
 
 const HINTS = {
-  aerial: 'Drag to orbit · Scroll to zoom · Click a sculpture',
+  aerial: 'Drag to orbit · Scroll to zoom · Pick a zone to fly there',
   walk: 'WASD to walk · Shift to run · Drag to look · Click flowers and sculptures',
   walkTouch: 'Left stick to walk · Drag to look · Tap flowers and sculptures',
   inspect: 'Drag to circle the sculpture · Esc to go back',
@@ -48,6 +48,7 @@ export default function Hud() {
   const photo = useGarden((s) => s.photo)
   const isTouch = useGarden((s) => s.isTouch)
   const hasPanel = useGarden((s) => !!s.selected)
+  const focus = useGarden((s) => s.focus)
   const set = useGarden((s) => s.set)
   const [introGone, setIntroGone] = useState(false)
 
@@ -72,6 +73,12 @@ export default function Hud() {
   }
 
   const hint = mode === 'walk' && isTouch ? HINTS.walkTouch : HINTS[mode]
+  const world = getWorld()
+  const zones = world.zones || []
+  const focused = zones.find((z) => z.id === focus)
+  // Aerial world view lists zones; otherwise the inspectable features of the current zone.
+  const showZones = mode === 'aerial' && !focused && zones.length > 0
+  const features = world.sculptures.filter((s) => !s.zone || !focused || s.zone === focused.id)
   const canTravel = mode === 'aerial' || mode === 'walk' || mode === 'inspect'
 
   return (
@@ -106,17 +113,28 @@ export default function Hud() {
       <div className="dock">
         {canTravel && (
           <div className="travel">
-            {getWorld().sculptures.map((s) => (
-              <button key={s.id} className="chip" onClick={() => rig.inspect(s.id)}>
-                {s.name}
-              </button>
-            ))}
+            {showZones
+              ? zones.map((z) => (
+                  <button key={z.id} className="chip" onClick={() => rig.focusZone(z.id)}>
+                    {z.name}
+                  </button>
+                ))
+              : features.map((s) => (
+                  <button key={s.id} className="chip" onClick={() => rig.inspect(s.id)}>
+                    {s.name}
+                  </button>
+                ))}
           </div>
         )}
         <div className="dock-row">
+          {mode === 'aerial' && focused && (
+            <button className="btn" onClick={rig.toAerial}>
+              World view
+            </button>
+          )}
           {mode === 'aerial' && (
             <button className="btn primary" onClick={rig.enter}>
-              Enter the garden
+              {focused ? `Enter ${focused.name}` : 'Enter the garden'}
             </button>
           )}
           {mode === 'walk' && (

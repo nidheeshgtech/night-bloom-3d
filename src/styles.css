@@ -504,3 +504,55 @@ input:focus-visible {
     pointer-events: none;
   }
 }
+
+/* Aerial zone pins */
+.zone-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.zone-pin:hover,
+.zone-pin.active {
+  transform: scale(1.06);
+  background: rgba(22, 16, 26, 0.85);
+}
+
+.zone-pin.active {
+  border-color: var(--accent);
+}
+
+.zone-pin-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.zone-pin-theme {
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.zone-pin.open .zone-pin-theme {
+  color: var(--accent);
+}
+
+.panel .status {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+}
+
+.panel .status.open {
+  color: var(--accent);
+}

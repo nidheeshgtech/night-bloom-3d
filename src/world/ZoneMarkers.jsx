@@ -10,7 +10,9 @@ export default function ZoneMarkers() {
   if (mode !== 'aerial') return null
   return ZONES.map((z) => (
     <Html key={z.id} position={[z.center.x, z.center.y + z.pinHeight, z.center.z]} center zIndexRange={[10, 0]}>
-      <button className={`zone-pin ${focus === z.id ? 'active' : ''} ${z.status}`} onClick={() => rig.focusZone(z.id)}>
+      <button
+        onWheel={(e) => document.querySelector('canvas')?.dispatchEvent(new WheelEvent('wheel', e.nativeEvent))}
+        className={`zone-pin ${focus === z.id ? 'active' : ''} ${z.status}`} onClick={() => rig.focusZone(z.id)}>
         <span className="zone-pin-name">{z.name}</span>
         <span className="zone-pin-theme">{z.status === 'open' ? z.theme : `${z.theme} · opening soon`}</span>
       </button>

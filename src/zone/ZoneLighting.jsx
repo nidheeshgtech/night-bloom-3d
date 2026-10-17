@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Environment } from '@react-three/drei'
 import * as THREE from 'three'
@@ -6,7 +6,7 @@ import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
 import { arches, archPoint, lamps } from './planting'
 import { pathToWorld } from './layout'
-import { bulbMat, zoneUniforms } from './materials'
+import { bulbMat, shadows, zoneUniforms } from './materials'
 
 // Sun direction measured from the HDRI's brightest pixel, so shadows match the visible sun.
 export const SUN_DIR = new THREE.Vector3(0.704, 0.486, 0.517).normalize()
@@ -36,7 +36,17 @@ function Stars() {
 export default function ZoneLighting() {
   const scene = useThree((s) => s.scene)
   const controls = useThree((s) => s.controls)
+  const gl = useThree((s) => s.gl)
   const shadowHalf = useRef(0)
+  const shadowKey = useRef('')
+
+  // Nothing that casts shadows moves (plant sway is shader-only and the shadow pass uses
+  // unswayed depth), so the shadow map is cached and re-rendered only when it must be.
+  useEffect(() => {
+    gl.shadowMap.autoUpdate = false
+    gl.shadowMap.needsUpdate = true
+    return () => (gl.shadowMap.autoUpdate = true)
+  }, [gl])
   const quality = useGarden((s) => s.quality)
   const night = useRef(useGarden.getState().night)
   const lampLights = useRef([])
@@ -50,7 +60,8 @@ export default function ZoneLighting() {
     l.shadow.normalBias = 0.025
     return l
   }, [])
-  sun.shadow.mapSize.setScalar(quality === 'high' ? 4096 : 2048)
+  sun.shadow.mapSize.setScalar(quality === 'high' ? 2048 : 1024)
+  shadows.dirty = true
   if (sun.shadow.map) {
     sun.shadow.map.dispose()
     sun.shadow.map = null
@@ -68,19 +79,29 @@ export default function ZoneLighting() {
     const mode = useGarden.getState().mode
     const cam = state.camera
     const focus = mode === 'walk' || mode === 'flying' || !controls ? cam.position : controls.target
-    const half = THREE.MathUtils.clamp(cam.position.distanceTo(focus) * 0.5, 28, 120)
+    // Frustum size in discrete steps and position on a coarse grid, so orbiting or
+    // zooming a little never triggers a re-render.
+    const want = cam.position.distanceTo(focus) * 0.5
+    const half = [30, 48, 75, 120].find((h) => h >= want) ?? 120
     const sc = sun.shadow.camera
-    if (Math.abs(half - shadowHalf.current) > shadowHalf.current * 0.08) {
+    if (half !== shadowHalf.current) {
       shadowHalf.current = half
       sc.left = sc.bottom = -half
       sc.right = sc.top = half
       sc.updateProjectionMatrix()
     }
-    const texel = (2 * shadowHalf.current) / sun.shadow.mapSize.x
-    const fx = Math.round(focus.x / texel) * texel
-    const fz = Math.round(focus.z / texel) * texel
-    sun.target.position.set(fx, 0, fz)
-    sun.position.set(fx, 0, fz).addScaledVector(SUN_DIR, 150)
+    const grid = half * 0.2
+    const fx = Math.round(focus.x / grid) * grid
+    const fz = Math.round(focus.z / grid) * grid
+    const key = `${half}:${fx}:${fz}`
+    if (key !== shadowKey.current || shadows.dirty || state.clock.elapsedTime < 6) {
+      shadowKey.current = key
+      shadows.dirty = false
+      sun.target.position.set(fx, 0, fz)
+      sun.position.set(fx, 0, fz).addScaledVector(SUN_DIR, 150)
+      sun.target.updateMatrixWorld()
+      gl.shadowMap.needsUpdate = true
+    }
 
     const target = useGarden.getState().night
     night.current += (target - night.current) * Math.min(1, delta * 3)

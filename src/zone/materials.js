@@ -1,6 +1,9 @@
 import * as THREE from 'three'
 import { getAtlas } from './botany/atlas'
 
+// Set when static shadow casters are added, so the cached shadow map is re-rendered.
+export const shadows = { dirty: true }
+
 // Time uniform for vegetation wind, advanced by the zone lighting rig.
 export const zoneUniforms = {
   uTime: { value: 0 },

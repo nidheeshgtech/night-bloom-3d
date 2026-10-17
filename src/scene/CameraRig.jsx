@@ -20,6 +20,7 @@ export default function CameraRig() {
   const mode = useGarden((s) => s.mode)
   const camera = useThree((s) => s.camera)
   const scene = useThree((s) => s.scene)
+  const gl = useThree((s) => s.gl)
   const controls = useRef()
   const tween = useRef()
   const memory = useRef(null)
@@ -28,8 +29,8 @@ export default function CameraRig() {
   useEffect(() => {
     camera.rotation.order = 'YXZ'
     controls.current.target.copy(world.aerial.target)
-    if (import.meta.env.DEV && window.__garden) Object.assign(window.__garden, { camera, scene })
-  }, [camera, scene, world])
+    if (import.meta.env.DEV && window.__garden) Object.assign(window.__garden, { camera, scene, gl })
+  }, [camera, scene, gl, world])
 
   useEffect(() => {
     const set = useGarden.setState

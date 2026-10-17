@@ -37,7 +37,7 @@ export default function App() {
     )
   }
   const quality = useGarden((s) => s.quality)
-  const maxDpr = quality === 'high' ? 2 : 1.5
+  const maxDpr = quality === 'high' ? 1.25 : 1
   const [dpr, setDpr] = useState(maxDpr)
 
   useEffect(() => setDpr(maxDpr), [maxDpr])
@@ -50,7 +50,9 @@ export default function App() {
         camera={{ position: world.camera.position, fov: 45, near: 0.1, far: world.camera.far }}
         gl={{ antialias: quality === 'low', preserveDrawingBuffer: true }}
       >
-        <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(maxDpr)} />
+        {/* Step resolution down once if the device struggles. Never step back up: every
+            change re-allocates render targets, which is a visible hitch. */}
+        <PerformanceMonitor onDecline={() => setDpr((d) => Math.min(d, 1))} />
         {isZone ? (
           <WorldScene />
         ) : (

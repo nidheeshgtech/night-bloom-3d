@@ -1,51 +1,46 @@
+import { useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { PerformanceMonitor } from '@react-three/drei'
+import Atmosphere from './scene/Atmosphere'
 import Terrain from './scene/Terrain'
 import Flowers from './scene/Flowers'
+import Sculptures from './scene/Sculptures'
+import Lanterns from './scene/Lanterns'
+import SelectionMarker from './scene/SelectionMarker'
+import CameraRig from './scene/CameraRig'
+import Interaction from './scene/Interaction'
+import Effects from './scene/Effects'
 import Perf from './scene/Perf'
-import SkyDome from './scene/SkyDome'
-import { usePerf } from './lib/store'
-
-const SUN = [-60, 22, -40]
-const FOG = '#f6c48f'
-
-function PerfOverlay() {
-  const { fps, calls, triangles } = usePerf()
-  return (
-    <div className="perf">
-      {fps} fps · {calls} draw calls · {(triangles / 1000).toFixed(0)}k tris
-    </div>
-  )
-}
+import Hud from './ui/Hud'
+import { useGarden } from './lib/store'
 
 export default function App() {
+  const quality = useGarden((s) => s.quality)
+  const maxDpr = quality === 'high' ? 2 : 1.5
+  const [dpr, setDpr] = useState(maxDpr)
+
+  useEffect(() => setDpr(maxDpr), [maxDpr])
+
   return (
     <>
       <Canvas
-        dpr={[1, 2]}
+        dpr={dpr}
         camera={{ position: [70, 42, 70], fov: 45, near: 0.1, far: 600 }}
-        gl={{ antialias: true }}
+        gl={{ antialias: quality === 'low', preserveDrawingBuffer: true }}
       >
-        <color attach="background" args={[FOG]} />
-        <fog attach="fog" args={[FOG, 130, 340]} />
-        <SkyDome sun={SUN} />
-        <hemisphereLight args={['#ffe3c2', '#4a6b3a', 0.9]} />
-        <directionalLight position={SUN} intensity={2.4} color="#ffd9a8" />
+        <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(maxDpr)} />
+        <Atmosphere />
         <Terrain />
         <Flowers />
-        <OrbitControls
-          autoRotate
-          autoRotateSpeed={0.4}
-          enableDamping
-          dampingFactor={0.06}
-          minDistance={12}
-          maxDistance={160}
-          maxPolarAngle={Math.PI / 2 - 0.05}
-          target={[0, 2, 0]}
-        />
+        <Sculptures />
+        <Lanterns />
+        <SelectionMarker />
+        <CameraRig />
+        <Interaction />
         <Perf />
+        {quality === 'high' && <Effects />}
       </Canvas>
-      <PerfOverlay />
+      <Hud />
     </>
   )
 }

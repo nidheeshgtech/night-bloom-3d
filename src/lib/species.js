@@ -1,0 +1,66 @@
+import * as THREE from 'three'
+
+export const SPECIES = [
+  {
+    id: 'petunia',
+    name: 'Petunia',
+    latin: 'Petunia × atkinsiana',
+    family: 'Solanaceae',
+    origin: 'South America (garden hybrid)',
+    season: 'Cool season in the Gulf, roughly Oct–Apr',
+    note: 'Trumpet-shaped blooms. A staple of large-scale floral displays because it flowers densely and for months.',
+    color: '#ff4f7b',
+  },
+  {
+    id: 'marigold',
+    name: 'French Marigold',
+    latin: 'Tagetes patula',
+    family: 'Asteraceae',
+    origin: 'Mexico and Guatemala',
+    season: 'Most of the year; best Oct–May',
+    note: 'Heat tolerant with a strong scent that deters some garden pests.',
+    color: '#ffb02e',
+  },
+  {
+    id: 'pansy',
+    name: 'Pansy',
+    latin: 'Viola × wittrockiana',
+    family: 'Violaceae',
+    origin: 'Europe (garden hybrid)',
+    season: 'Winter months in hot climates',
+    note: 'Prefers cool weather. The dark centre "face" is bred from wild violas.',
+    color: '#b45cff',
+  },
+  {
+    id: 'periwinkle',
+    name: 'Madagascar Periwinkle',
+    latin: 'Catharanthus roseus',
+    family: 'Apocynaceae',
+    origin: 'Madagascar',
+    season: 'Year-round in warm climates',
+    note: 'Very heat and drought tolerant. All parts are toxic if eaten.',
+    color: '#ffffff',
+  },
+  {
+    id: 'zinnia',
+    name: 'Zinnia',
+    latin: 'Zinnia elegans',
+    family: 'Asteraceae',
+    origin: 'Mexico',
+    season: 'Warm months; loves full sun',
+    note: 'Fast-growing and a favourite of butterflies.',
+    color: '#ff7a3d',
+  },
+  {
+    id: 'cornflower',
+    name: 'Cornflower',
+    latin: 'Centaurea cyanus',
+    family: 'Asteraceae',
+    origin: 'Europe',
+    season: 'Cool season, roughly Nov–Mar in the Gulf',
+    note: "Also called bachelor's button. Its petals are edible.",
+    color: '#4fc3ff',
+  },
+]
+
+export const speciesColor = (id) => new THREE.Color(SPECIES.find((s) => s.id === id).color)

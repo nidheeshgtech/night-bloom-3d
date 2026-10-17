@@ -22,6 +22,16 @@ import { bloomWorld } from './world/bloomWorld'
 import { islandWorld } from './lib/islandWorld'
 import { setWorld } from './lib/world'
 
+// Render resolution from a pixel budget rather than a fixed ratio: small high-density screens
+// (phones) get sharp output, large desktop windows don't overload the GPU.
+const PIXEL_BUDGET = { high: 1.5e6, low: 1.3e6 }
+function budgetDpr(quality) {
+  const css = window.innerWidth * window.innerHeight
+  const ideal = Math.sqrt(PIXEL_BUDGET[quality] / css)
+  const floor = quality === 'high' ? 1.25 : 1 // measured smooth on desktop at 1.25x
+  return Math.round(Math.min(window.devicePixelRatio || 1, 2, Math.max(floor, ideal)) * 100) / 100
+}
+
 const params = new URLSearchParams(window.location.search)
 const ZONE = params.get('zone')
 // The first prototype (floating island) stays available at ?world=island for comparison.
@@ -38,7 +48,16 @@ export default function App() {
     )
   }
   const quality = useGarden((s) => s.quality)
-  const maxDpr = quality === 'high' ? 1.25 : 1
+  const maxDpr = budgetDpr(quality)
+  const ready = useGarden((s) => s.ready)
+  // Only judge performance once loading and shader compilation are over; the slow frames
+  // during warm-up used to trigger a permanent drop to low resolution on every device.
+  const [monitor, setMonitor] = useState(false)
+  useEffect(() => {
+    if (!ready) return
+    const t = setTimeout(() => setMonitor(true), 4000)
+    return () => clearTimeout(t)
+  }, [ready])
   const [dpr, setDpr] = useState(maxDpr)
 
   useEffect(() => setDpr(maxDpr), [maxDpr])
@@ -51,9 +70,9 @@ export default function App() {
         camera={{ position: world.camera.position, fov: 45, near: 0.1, far: world.camera.far }}
         gl={{ antialias: quality === 'low', preserveDrawingBuffer: true }}
       >
-        {/* Step resolution down once if the device struggles. Never step back up: every
-            change re-allocates render targets, which is a visible hitch. */}
-        <PerformanceMonitor onDecline={() => setDpr((d) => Math.min(d, 1))} />
+        {/* If the device struggles, step resolution down gradually (never below 1x). Never
+            step back up: every change re-allocates render targets, a visible hitch. */}
+        {monitor && <PerformanceMonitor onDecline={() => setDpr((d) => Math.max(1, Math.round(d * 0.8 * 100) / 100))} />}
         {isZone ? (
           <WorldScene />
         ) : (

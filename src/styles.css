@@ -1181,3 +1181,20 @@ input:focus-visible {
 .explore-pop {
   background: rgba(20, 14, 26, 0.95);
 }
+
+.brand-home {
+  margin-left: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  text-shadow: none;
+}
+
+.brand-home:hover {
+  color: var(--ink);
+}

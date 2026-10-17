@@ -1,14 +1,19 @@
 import { createRoot } from 'react-dom/client'
-import gsap from 'gsap'
-import { applyBrand } from './brand'
-import App from './App'
-import { useGarden } from './lib/store'
-import { rig, player } from './lib/player'
+import { ROUTE } from './route'
 import './styles.css'
 
-// Debug handle for local testing only.
-if (import.meta.env.DEV) window.__garden = { useGarden, rig, player, gsap }
+const root = createRoot(document.getElementById('root'))
 
-applyBrand()
-
-createRoot(document.getElementById('root')).render(<App />)
+// The showcase page loads without the 3D engine; demos load it on demand.
+if (ROUTE.kind === 'showcase') {
+  import('./showcase/Showcase').then(({ default: Showcase }) => root.render(<Showcase />))
+} else {
+  Promise.all([import('./brand'), import('./App'), import('gsap'), import('./lib/store'), import('./lib/player')]).then(
+    ([brand, { default: App }, { default: gsap }, { useGarden }, { rig, player }]) => {
+      // Debug handle for local testing only.
+      if (import.meta.env.DEV) window.__garden = { useGarden, rig, player, gsap }
+      brand.applyBrand()
+      root.render(<App />)
+    },
+  )
+}

@@ -25,6 +25,10 @@ Original concept. Not affiliated with any existing attraction.
 - **Client re-skins:** one config entry (`src/brand/presets.js`) rebrands names, colours, zone
   copy, booking buttons and the drone text. Try `?brand=oasis`.
 
+## Demos
+
+- `/` showcase · `/garden` botanical world · `/festival` event venue map · `/resort` resort tour
+
 ## Run it
 
 ```bash

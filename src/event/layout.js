@@ -6,7 +6,7 @@ import { pathToWorld, PATH_LENGTH } from '../zone/layout'
 import { LANTERNS, lanternPath, toWorld as lanternToWorld } from '../zone/lantern/layout'
 
 // Festival venue layout (only used when the active brand defines an `event`).
-export const EVENT = BRAND.event
+export const EVENT = BRAND.event && (BRAND.venue || 'festival') === 'festival' ? BRAND.event : null
 const deg = (d) => (d * Math.PI) / 180
 const polar = (a, r) => {
   const x = Math.cos(a) * r

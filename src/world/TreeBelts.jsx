@@ -5,6 +5,7 @@ import Palms from '../zone/Palms'
 import { cypressGeometry, ghafGeometry, treeGeometry } from '../zone/foliage'
 import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
+import { RESORT_CLEAR } from '../resort/layout'
 import { heightAt } from './terrain'
 import { GAP_ANGLES, PETAL, PROMENADE, ZONES, petalWidth } from './plan'
 
@@ -34,7 +35,8 @@ export const TREES = (() => {
     const a = (i / 64) * Math.PI * 2 + rand() * 0.05
     out.push({ pos: at(a, 160 + rand() * 18), s: 1.1 + rand() * 0.8, k: i % 3 })
   }
-  return out
+  // Make room for resort facilities when that venue is active.
+  return out.filter((t) => !RESORT_CLEAR.some((c) => (t.pos.x - c.x) ** 2 + (t.pos.z - c.z) ** 2 < c.r * c.r))
 })()
 
 // Date palms along the outer edge of the promenade, flanking each spoke and in each gap.

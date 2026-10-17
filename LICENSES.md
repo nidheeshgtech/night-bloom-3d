@@ -31,6 +31,8 @@ for traceability. Check the asset pages again before publishing in case anything
   Lilies: all generated in code in `src/zone/`.
 - Lotus Crown, zone light outlines, city ring and street lights: original designs generated in code.
   The Lotus Crown is deliberately unlike any existing landmark (open petal fins, not a lattice dome).
+- Resort venue (pool, villas, dining terrace) and the fictional 'Dunebloom Resort & Spa' name:
+  generated in code. Showcase thumbnails in public/showcase are screenshots of this project.
 - Festival venue (stages, food trucks, booths, signage) and the fictional 'Sandglow Festival'
   name: generated in code; sponsor names are placeholders.
 - Skyline: generic procedural towers, deliberately not modelled on any real building.

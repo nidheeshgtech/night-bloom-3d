@@ -6,7 +6,7 @@ import { BUTTERFLIES } from '../lib/butterflies'
 import Icon from './Icon'
 import { ctaFor } from '../brand'
 import { triggerCta } from '../world/BookingPins'
-import { CATEGORIES, EVENT, POIS } from '../event/layout'
+import { CATEGORIES, POIS, VENUE_DATA, ctaLabelFor } from '../venue'
 
 function SculptureCard({ id }) {
   const s = getWorld().sculptures.find((sc) => sc.id === id)
@@ -83,7 +83,8 @@ function ButterflyCard({ species }) {
 function PoiCard({ id }) {
   const poi = POIS.find((p) => p.id === id)
   const cat = CATEGORIES[poi.cat]
-  const next = poi.cat === 'stage' ? EVENT.schedule.find((it) => it.where === poi.id) : null
+  const next = VENUE_DATA.schedule.find((it) => it.where === poi.id)
+  const cta = ctaLabelFor(poi)
   return (
     <>
       <p className="eyebrow">
@@ -94,7 +95,7 @@ function PoiCard({ id }) {
       {next && (
         <dl className="facts">
           <div>
-            <dt>On stage</dt>
+            <dt>{poi.cat === 'stage' ? 'On stage' : 'Today'}</dt>
             <dd>
               {next.time} · {next.title}
             </dd>
@@ -104,9 +105,9 @@ function PoiCard({ id }) {
       <button className="btn primary cta-btn" onClick={() => rig.goTo(poi)}>
         Take me there
       </button>
-      {(poi.cat === 'info' || poi.cat === 'stage') && (
-        <button className="btn cta-btn" onClick={() => triggerCta(null)}>
-          {ctaFor(null).label}
+      {cta && (
+        <button className="btn cta-btn" onClick={() => triggerCta(null, cta)}>
+          {cta}
         </button>
       )}
     </>

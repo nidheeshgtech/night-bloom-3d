@@ -16,7 +16,8 @@ import { PATH_HALF_IN, innerPath } from '../zone/wingsong/layout'
 import { LANTERN_PATH_HALF, lanternPath } from '../zone/lantern/layout'
 import { PAVILIONS } from './Pavilions'
 import { LOTUS } from './LotusCrown'
-import { EVENT_COLLIDERS } from '../event/layout'
+import { VENUE, VENUE_COLLIDERS, VENUE_WALLS } from '../venue'
+import { buildResortTour } from '../resort/tour'
 import { HERB_FEATURES } from '../zone/herbarium/features'
 import { HERB_WALLS, PAV_CORNERS, C as HERB_C, toWorld as herbToWorld } from '../zone/herbarium/layout'
 import { CYPRESSES, FRUIT_TREES, HERB_GHAF, HERB_PALMS, getHerbHeads } from '../zone/herbarium/planting'
@@ -292,10 +293,10 @@ export const bloomWorld = {
     ...CYPRESSES.map((p) => ({ ...xz(p), r: 0.5 })),
     ...HERB_PALMS.map((p) => ({ ...xz(p.pos), r: 0.55 })),
     { ...xz(HERB_GHAF), r: 0.5 },
-    ...EVENT_COLLIDERS,
+    ...VENUE_COLLIDERS,
     ...[1, 3, 5, 7].map((k) => ({ ...xz(herbToWorld(HERB_C + Math.cos((k * Math.PI) / 4) * 4.7, Math.sin((k * Math.PI) / 4) * 4.7)), r: 0.25 })),
   ],
-  walls: [...WALLS, ...HERB_WALLS],
+  walls: [...WALLS, ...HERB_WALLS, ...VENUE_WALLS],
   blockedAt: isBlocked,
   walkPaths: buildWalkPaths(),
   zones,
@@ -308,7 +309,7 @@ export const bloomWorld = {
   aerial: { target: new THREE.Vector3(0, 0, 12), distance: 235, height: 165 },
   camera: { position: [0, 165, 247], far: 1600 },
   orbit: { min: 12, max: 380 },
-  tour: buildTour,
+  tour: VENUE === 'resort' ? buildResortTour : buildTour,
 }
 
 // Paved routes used for Street View-style direction arrows.

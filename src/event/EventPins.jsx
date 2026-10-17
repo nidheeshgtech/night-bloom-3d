@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { useGarden } from '../lib/store'
 import Icon from '../ui/Icon'
-import { CATEGORIES, POIS } from './layout'
+import { CATEGORIES, POIS } from '../venue'
 
 // Compact icon pins for festival points of interest. From the air: all pins (filterable);
 // walking: pins within 70 m.

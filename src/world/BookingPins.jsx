@@ -14,9 +14,9 @@ const PINS = ZONES.map((z, i) => {
   return { zone: z, pos: p }
 }).filter((p) => p.zone.status === 'open')
 
-export const triggerCta = (zoneId) => {
+export const triggerCta = (zoneId, label) => {
   const note = openCta(zoneId)
-  if (note) useGarden.setState({ ctaNote: { ...note, zoneId } })
+  if (note) useGarden.setState({ ctaNote: { ...note, ...(label ? { label } : {}), zoneId } })
 }
 
 function Pin({ pin }) {

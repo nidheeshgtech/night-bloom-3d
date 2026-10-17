@@ -13,7 +13,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z)
 const UP = V(0, 1, 0)
 
 // Colour a geometry per vertex and keep only position/normal/color so parts can merge.
-function part(geo, color, matrix) {
+export function part(geo, color, matrix) {
   const g = geo.index ? geo.toNonIndexed() : geo
   for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k)
   if (matrix) g.applyMatrix4(matrix)
@@ -23,11 +23,11 @@ function part(geo, color, matrix) {
   g.setAttribute('color', new THREE.BufferAttribute(col, 3))
   return g
 }
-const box = (w, h, d, x, y, z) => new THREE.BoxGeometry(w, h, d).translate(x, y, z)
-const place = (pos, yaw) => new THREE.Matrix4().compose(pos, new THREE.Quaternion().setFromAxisAngle(UP, yaw), V(1, 1, 1))
+export const box = (w, h, d, x, y, z) => new THREE.BoxGeometry(w, h, d).translate(x, y, z)
+export const place = (pos, yaw) => new THREE.Matrix4().compose(pos, new THREE.Quaternion().setFromAxisAngle(UP, yaw), V(1, 1, 1))
 
 // Text banner texture.
-function banner(lines, { w = 1024, h = 256, bg = '#120a18', fg = '#ffffff', accent = BRAND.accent } = {}) {
+export function banner(lines, { w = 1024, h = 256, bg = '#120a18', fg = '#ffffff', accent = BRAND.accent } = {}) {
   const c = document.createElement('canvas')
   c.width = w
   c.height = h
@@ -50,7 +50,7 @@ function banner(lines, { w = 1024, h = 256, bg = '#120a18', fg = '#ffffff', acce
   return t
 }
 
-const glowMaterial = (map, day = 0.6, night = 1.6) => {
+export const glowMaterial = (map, day = 0.6, night = 1.6) => {
   const m = new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: '#ffffff', roughness: 0.6 })
   m.userData.glow = [day, night]
   return m

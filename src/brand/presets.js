@@ -42,6 +42,38 @@ export const PRESETS = {
       sponsors: ['Your Brand Here', 'Partner Two', 'Partner Three'],
     },
   },
+  // Fictional resort tour demo: facilities, booking buttons, today's activities, guided tour.
+  resort: {
+    name: 'Dunebloom Resort & Spa',
+    eyebrow: 'Resort virtual tour',
+    lede: 'Walk the gardens, pool and villas before you book. Stay for the lanterns after dark.',
+    fine: 'Fictional resort demo built on the Night Bloom engine.',
+    accent: '#5fd0c0',
+    accentInk: '#06261f',
+    mark: ['#5fd0c0', '#ffd27a', '#ffffff', '#c99bff'],
+    cta: { label: 'Check availability', url: '' },
+    showText: 'DUNEBLOOM',
+    venue: 'resort',
+    zones: {
+      bloom: { name: 'Arrival Gardens', tagline: 'The flower walk from check-in to the lake' },
+      herbarium: { name: 'Courtyard Spa', tagline: 'Treatment pavilion in a four-part garden', cta: { label: 'Book a treatment' } },
+      wingsong: { name: 'Kids Club', tagline: 'Butterfly glasshouse, open daily 9am–6pm', cta: { label: 'Book family tickets' } },
+      lantern: { name: 'Lantern Lawn', tagline: 'Evening lights by the lake', cta: { label: 'Reserve a table' } },
+    },
+    event: {
+      dates: 'Open daily',
+      scheduleTitle: 'Today',
+      clockStart: '16:44',
+      schedule: [
+        { time: '17:00', title: 'Sunset yoga', where: 'yoga' },
+        { time: '18:00', title: 'Poolside DJ', where: 'pool' },
+        { time: '19:00', title: 'Butterfly feeding for kids', where: 'kids' },
+        { time: '19:30', title: 'Dinner service', where: 'dining' },
+        { time: '21:30', title: 'Drone show over the lake', where: 'show' },
+      ],
+      sponsors: [],
+    },
+  },
   // Fictional sample client, to show how one config re-brands the whole experience.
   oasis: {
     name: 'Oasis Grove Resort',

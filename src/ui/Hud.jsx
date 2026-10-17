@@ -8,10 +8,11 @@ import InfoPanel from './InfoPanel'
 import CtaNote from './CtaNote'
 import SiteMap from './SiteMap'
 import DPad from './DPad'
-import { CATEGORIES, EVENT, POIS } from '../event/layout'
+import { CATEGORIES, POIS, SCHEDULE_TITLE, VENUE_DATA as EVENT } from '../venue'
 import { NextUp, SchedulePanel } from '../event/EventUI'
 import Icon from './Icon'
 import { BRAND } from '../brand'
+import { ROUTE } from '../route'
 
 function Intro({ leaving, onGone }) {
   const ready = useGarden((s) => s.ready)
@@ -115,7 +116,7 @@ function Festival({ close }) {
   const list = POIS.filter((p) => !hidden.includes(p.cat) && (p.cat !== 'wc' && p.cat !== 'info' ? true : !seen.has(p.cat) && seen.add(p.cat)))
   return (
     <>
-      <p className="label">Festival · show on map</p>
+      <p className="label">{EVENT.scheduleTitle ? 'Resort' : 'Festival'} · show on map</p>
       <div className="cat-chips">
         {Object.entries(CATEGORIES).map(([id, c]) => (
           <button key={id} className={hidden.includes(id) ? '' : 'on'} style={{ '--cat': c.color }} onClick={() => toggle(id)}>
@@ -235,6 +236,11 @@ export default function Hud() {
       <header className="brand">
         <span className="brand-mark" />
         {BRAND.name}
+        {ROUTE.fromPath && (
+          <a className="brand-home" href={import.meta.env.BASE_URL}>
+            All demos
+          </a>
+        )}
       </header>
       <PerfOverlay />
 
@@ -265,7 +271,7 @@ export default function Hud() {
             <IconBtn icon="map" label={siteMapOn ? 'Close site map' : 'Site map'} active={siteMapOn} onClick={siteMapOn ? rig.closeSiteMap : rig.siteMap} />
           )}
           {mode === 'walk' && <IconBtn icon="aerial" label="Exit to aerial view" onClick={rig.toAerial} />}
-          {EVENT && (mode === 'aerial' || mode === 'walk') && <IconBtn icon="calendar" label="Tonight's schedule" active={scheduleOn} onClick={() => set({ schedule: !scheduleOn })} />}
+          {EVENT && (mode === 'aerial' || mode === 'walk') && <IconBtn icon="calendar" label={`${SCHEDULE_TITLE}'s schedule`} active={scheduleOn} onClick={() => set({ schedule: !scheduleOn })} />}
           {mode === 'inspect' && <IconBtn icon="back" label="Back" onClick={rig.back} />}
           {canTravel && (
             <Explore

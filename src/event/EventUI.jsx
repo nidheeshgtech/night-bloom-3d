@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useGarden } from '../lib/store'
 import { rig } from '../lib/player'
 import Icon from '../ui/Icon'
-import { EVENT, POIS } from './layout'
+import { POIS, SCHEDULE_TITLE, VENUE_DATA as EVENT } from '../venue'
 
 // Demo clock: starts at EVENT.clockStart when the page opens and runs 10x real time.
 const SPEED = 10
@@ -21,7 +21,7 @@ export function useEventClock() {
   return now
 }
 
-const where = (item) => (item.where === 'show' ? 'Over the lake' : EVENT.stages[item.where])
+const where = (item) => (item.where === 'show' ? 'Over the lake' : POIS.find((p) => p.id === item.where)?.name || '')
 
 // Go to a schedule item: stages fly/walk there; the shows start the light show.
 export function goToItem(item) {
@@ -59,7 +59,7 @@ export function SchedulePanel() {
         <Icon name="close" />
       </button>
       <p className="eyebrow">{EVENT.dates}</p>
-      <h2>Tonight</h2>
+      <h2>{SCHEDULE_TITLE}</h2>
       <ol className="sitemap-list">
         {EVENT.schedule.map((it, i) => {
           const start = toMin(it.time)

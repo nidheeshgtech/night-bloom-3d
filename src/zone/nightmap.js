@@ -10,6 +10,7 @@ import { arches, lamps } from './planting'
 import { glassCenter, innerPath, stream } from './wingsong/layout'
 import { LANTERNS, lanternPath, plazaCenter } from './lantern/layout'
 import { C as HC, PAV, POOL, QUARTERS, quarterCentre, toWorld as herb } from './herbarium/layout'
+import { ARRIVAL, DINING, POOL as R_POOL, RESORT, VILLAS, YOGA } from '../resort/layout'
 import { BOOTHS, ENTRANCE, EVENT, FIRST_AID, MAIN_STAGE, PARKING, SECOND_STAGE, TOILETS, TRUCKS } from '../event/layout'
 
 const RES = 1024
@@ -113,6 +114,14 @@ export function buildNightMap() {
     for (const t of [...TOILETS, FIRST_AID]) glow(t.pos.x, t.pos.z, 3.5, '#dfe8ff', 0.5)
     glow(ENTRANCE.pos.x, ENTRANCE.pos.z, 8, '#ffcf70', 0.7)
     glow(PARKING.pos.x, PARKING.pos.z, 30, '#ffa050', 0.3)
+  }
+
+  if (RESORT) {
+    glow(R_POOL.pos.x, R_POOL.pos.z, 15, '#3fd2ff', 0.55)
+    for (const v of VILLAS) glow(v.pos.x, v.pos.z, 7, '#ffc070', 0.65)
+    glow(DINING.pos.x, DINING.pos.z, 12, '#ffb860', 0.8)
+    glow(YOGA.pos.x, YOGA.pos.z, 7, '#c99bff', 0.45)
+    glow(ARRIVAL.pos.x, ARRIVAL.pos.z, 8, '#ffd9a0', 0.7)
   }
 
   const tex = new THREE.CanvasTexture(c)

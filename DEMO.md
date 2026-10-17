@@ -1,5 +1,18 @@
 # Presenting Night Bloom
 
+## Links
+| Page | URL | Use |
+|---|---|---|
+| Showcase (home) | `/` | Your portfolio and sales page: every demo as a card |
+| Garden | `/garden` | Botanical attraction demo |
+| Festival | `/festival` | Event venue map demo |
+| Resort | `/resort` | Resort virtual tour demo |
+| Client link | `/?brand=<key>` | A preset made for one client (no "All demos" link) |
+
+To add a demo: add a preset in `src/brand/presets.js`, a path in `src/route.js` (`PATH_PRESETS`),
+and a card in `src/showcase/demos.js` with a thumbnail in `public/showcase/`. Set your email or
+LinkedIn in `OWNER` (demos.js) to show the "Get one for your venue" button.
+
 ## Run it
 - **Dev:** `npm run dev` → http://localhost:5173
 - **Production build:** `npm run build`, then open `dist/` from any static host.
@@ -38,6 +51,13 @@ makers and sponsors market, toilets, first aid, info points, a ticketed entrance
   items launch the light show. A banner shows "Next in X min" on a fast demo clock.
 - Sponsors, stage names, schedule, dates and ticket link all come from the `event` block of the
   preset in `src/brand/presets.js`.
+
+## Resort mode (resort tour demo)
+`/resort` (or `?brand=resort`): **Dunebloom Resort & Spa**, fictional. Arrival court, infinity
+pool with cabanas and pool bar, six villas with plunge pools, lakeview dining terrace, sunrise
+yoga lawn, plus the spa and kids club in existing gardens. Each place has a booking button
+("Check availability", "Reserve a table", "Book a treatment"…), a "Today" schedule, and its own
+guided tour.
 
 ## Client re-skins
 Each client is one entry in `src/brand/presets.js`: name, intro text, accent colour, zone names and

@@ -31,6 +31,8 @@ for traceability. Check the asset pages again before publishing in case anything
   Lilies: all generated in code in `src/zone/`.
 - Lotus Crown, zone light outlines, city ring and street lights: original designs generated in code.
   The Lotus Crown is deliberately unlike any existing landmark (open petal fins, not a lattice dome).
+- Festival venue (stages, food trucks, booths, signage) and the fictional 'Sandglow Festival'
+  name: generated in code; sponsor names are placeholders.
 - Skyline: generic procedural towers, deliberately not modelled on any real building.
 - Herbarium Walk (chahar bagh layout, domed pavilion, fountain, fruit trees): original design in
   code, after the traditional four-part garden form.

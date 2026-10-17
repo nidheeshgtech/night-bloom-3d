@@ -5,7 +5,7 @@ const key = new URLSearchParams(window.location.search).get('brand')
 const base = PRESETS.nightbloom
 const pick = PRESETS[key] || base
 
-export const BRAND = { ...base, ...pick, cta: { ...base.cta, ...pick.cta }, zones: pick.zones || {} }
+export const BRAND = { ...base, ...pick, cta: { ...base.cta, ...pick.cta }, zones: pick.zones || {}, event: pick.event || null }
 
 // Call action for a zone (falls back to the brand-wide one).
 export const ctaFor = (zoneId) => ({ ...BRAND.cta, ...(BRAND.zones[zoneId]?.cta || {}) })

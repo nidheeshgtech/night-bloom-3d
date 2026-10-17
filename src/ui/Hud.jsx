@@ -8,6 +8,8 @@ import InfoPanel from './InfoPanel'
 import CtaNote from './CtaNote'
 import SiteMap from './SiteMap'
 import DPad from './DPad'
+import { CATEGORIES, EVENT, POIS } from '../event/layout'
+import { NextUp, SchedulePanel } from '../event/EventUI'
 import Icon from './Icon'
 import { BRAND } from '../brand'
 
@@ -72,7 +74,7 @@ function IconBtn({ icon, label, onClick, active, glow }) {
 }
 
 // "Explore" popup listing places (gardens from the air, features inside a garden).
-function Explore({ title, items }) {
+function Explore({ title, items, festival }) {
   const [open, setOpen] = useState(false)
   useEffect(() => {
     if (!open) return
@@ -80,7 +82,7 @@ function Explore({ title, items }) {
     window.addEventListener('pointerdown', close)
     return () => window.removeEventListener('pointerdown', close)
   }, [open])
-  if (!items.length) return null
+  if (!items.length && !festival) return null
   return (
     <div className="explore">
       <button className={`bar-btn wide ${open ? 'active' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Explore places">
@@ -88,7 +90,8 @@ function Explore({ title, items }) {
       </button>
       {open && (
         <div className="explore-pop" role="menu">
-          <p className="label">{title}</p>
+          {festival && <Festival close={() => setOpen(false)} />}
+          {items.length > 0 && <p className="label">{title}</p>}
           {items.map((it) => (
             <button key={it.id} role="menuitem" onClick={() => (setOpen(false), it.go())} style={it.color ? { '--zone': it.color } : undefined}>
               {it.num ? <span className="zone-pin-num">{it.num}</span> : <span className="explore-dot" />}
@@ -101,6 +104,37 @@ function Explore({ title, items }) {
         </div>
       )}
     </div>
+  )
+}
+
+// Festival places, with category filters for the map pins.
+function Festival({ close }) {
+  const hidden = useGarden((s) => s.hiddenCats)
+  const toggle = (c) => useGarden.setState({ hiddenCats: hidden.includes(c) ? hidden.filter((x) => x !== c) : [...hidden, c] })
+  const seen = new Set()
+  const list = POIS.filter((p) => !hidden.includes(p.cat) && (p.cat !== 'wc' && p.cat !== 'info' ? true : !seen.has(p.cat) && seen.add(p.cat)))
+  return (
+    <>
+      <p className="label">Festival · show on map</p>
+      <div className="cat-chips">
+        {Object.entries(CATEGORIES).map(([id, c]) => (
+          <button key={id} className={hidden.includes(id) ? '' : 'on'} style={{ '--cat': c.color }} onClick={() => toggle(id)}>
+            <Icon name={c.icon} size={13} /> {c.label}
+          </button>
+        ))}
+      </div>
+      {list.map((p) => (
+        <button key={p.id} role="menuitem" onClick={() => (close(), useGarden.setState({ selected: { kind: 'poi', id: p.id } }))}>
+          <span className="poi-dot" style={{ '--cat': CATEGORIES[p.cat].color }}>
+            <Icon name={CATEGORIES[p.cat].icon} size={13} />
+          </span>
+          <span className="explore-text">
+            <strong>{p.name}</strong>
+            <span>{p.sub}</span>
+          </span>
+        </button>
+      ))}
+    </>
   )
 }
 
@@ -141,6 +175,7 @@ export default function Hud() {
   const here = useGarden((s) => s.here)
   const showOn = useGarden((s) => s.show !== null)
   const siteMapOn = useGarden((s) => s.siteMap)
+  const scheduleOn = useGarden((s) => s.schedule)
 
   const toggleAudio = () => {
     audioOn ? audio.stop() : audio.start()
@@ -230,9 +265,11 @@ export default function Hud() {
             <IconBtn icon="map" label={siteMapOn ? 'Close site map' : 'Site map'} active={siteMapOn} onClick={siteMapOn ? rig.closeSiteMap : rig.siteMap} />
           )}
           {mode === 'walk' && <IconBtn icon="aerial" label="Exit to aerial view" onClick={rig.toAerial} />}
+          {EVENT && (mode === 'aerial' || mode === 'walk') && <IconBtn icon="calendar" label="Tonight's schedule" active={scheduleOn} onClick={() => set({ schedule: !scheduleOn })} />}
           {mode === 'inspect' && <IconBtn icon="back" label="Back" onClick={rig.back} />}
           {canTravel && (
             <Explore
+              festival={!!EVENT}
               title={showZones ? 'Gardens' : 'In this garden'}
               items={showZones ? zones.map((z, i) => ({ id: z.id, label: z.name, sub: z.theme, num: i + 1, color: z.color, go: () => rig.focusZone(z.id) })) : features.map((f) => ({ id: f.id, label: f.name, sub: f.kind, go: () => rig.inspect(f.id) }))}
             />
@@ -253,6 +290,8 @@ export default function Hud() {
       <InfoPanel />
       <CtaNote />
       <SiteMap />
+      {EVENT && <SchedulePanel />}
+      {EVENT && <NextUp />}
       {isTouch && mode === 'walk' && <DPad />}
     </div>
   )

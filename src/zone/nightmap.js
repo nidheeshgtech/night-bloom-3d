@@ -10,6 +10,7 @@ import { arches, lamps } from './planting'
 import { glassCenter, innerPath, stream } from './wingsong/layout'
 import { LANTERNS, lanternPath, plazaCenter } from './lantern/layout'
 import { C as HC, PAV, POOL, QUARTERS, quarterCentre, toWorld as herb } from './herbarium/layout'
+import { BOOTHS, ENTRANCE, EVENT, FIRST_AID, MAIN_STAGE, PARKING, SECOND_STAGE, TOILETS, TRUCKS } from '../event/layout'
 
 const RES = 1024
 
@@ -101,6 +102,18 @@ export function buildNightMap() {
     if (i % 3 || Math.hypot(t.pos.x, t.pos.z) > 155) return
     glow(t.pos.x, t.pos.z, 3.4 * t.s, TREE_COLORS[Math.floor(rand() * 3)], 0.6)
   })
+
+  // Festival venue (event presets only).
+  if (EVENT) {
+    glow(MAIN_STAGE.pos.x - 6, MAIN_STAGE.pos.z + 9, 9, '#ff4fa3', 0.6)
+    glow(MAIN_STAGE.pos.x + 6, MAIN_STAGE.pos.z + 9, 9, '#5fe0ff', 0.6)
+    glow(SECOND_STAGE.pos.x, SECOND_STAGE.pos.z, 8, '#b45cff', 0.75)
+    for (const t of TRUCKS) glow(t.pos.x * 0.95, t.pos.z * 0.95, 6, '#ffb860', 0.8)
+    for (const b of BOOTHS) glow(b.pos.x * 0.97, b.pos.z * 0.97, 3.5, '#ffe9c4', 0.6)
+    for (const t of [...TOILETS, FIRST_AID]) glow(t.pos.x, t.pos.z, 3.5, '#dfe8ff', 0.5)
+    glow(ENTRANCE.pos.x, ENTRANCE.pos.z, 8, '#ffcf70', 0.7)
+    glow(PARKING.pos.x, PARKING.pos.z, 30, '#ffa050', 0.3)
+  }
 
   const tex = new THREE.CanvasTexture(c)
   tex.colorSpace = THREE.NoColorSpace

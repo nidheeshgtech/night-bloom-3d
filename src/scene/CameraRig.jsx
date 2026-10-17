@@ -8,7 +8,7 @@ import { input, player, rig } from '../lib/player'
 import { shared } from '../lib/flowerMaterial'
 import { zoneUniforms } from '../zone/materials'
 import { audio } from '../lib/audio'
-import { findPath } from '../lib/nav'
+import { findPath, nearestWalkable } from '../lib/nav'
 import { getWorld } from '../lib/world'
 
 const EYE = 1.7
@@ -131,6 +131,27 @@ export default function CameraRig() {
       const forward = Math.abs(angleDiff(Math.atan2(-dir.x, -dir.z), player.yaw)) < 0.9
       player.auto = { curve, length, s: 0, v: 0, forward }
       return true
+    }
+
+    // Take me there: walk if already walking, otherwise fly down to a walkable spot facing it.
+    rig.goTo = (poi) => {
+      const st = useGarden.getState()
+      if (st.mode === 'flying' || st.mode === 'tour') return
+      set({ selected: null, siteMap: false })
+      if (poi.fly) {
+        const target = poi.pos.clone().setY(poi.pos.y + 1)
+        return fly(target.clone().add(new THREE.Vector3(0, 40, 45)), target, { duration: 2.6, onDone: () => toOrbit(target, 'aerial') })
+      }
+      if (st.mode === 'walk' && rig.walkTo(poi.pos.x, poi.pos.z, 5)) {
+        player.target = { x: poi.pos.x, z: poi.pos.z, t: performance.now() }
+        return
+      }
+      const spot = nearestWalkable(world, poi.pos.x, poi.pos.z, 8)
+      if (!spot) return
+      const pos = new THREE.Vector3(spot[0], world.heightAt(spot[0], spot[1]) + EYE, spot[1])
+      const look = (poi.look || poi.pos).clone()
+      const yaw = Math.atan2(-(look.x - pos.x), -(look.z - pos.z))
+      fly(pos, pos.clone().add(forward(yaw, WALK_PITCH).multiplyScalar(10)), { duration: 3, arc: 10, onDone: () => startWalk(pos, yaw, WALK_PITCH) })
     }
 
     // Lake light show: switch to night, fly to a lakeside viewpoint (unless walking), start.

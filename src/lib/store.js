@@ -12,6 +12,8 @@ export const useGarden = create((set) => ({
   ctaNote: null, // demo booking note { label, zoneId }
   show: null, // light show start time (zoneUniforms.uTime) or null
   siteMap: false, // infographic site-map view (aerial)
+  schedule: false, // festival schedule panel open
+  hiddenCats: [], // festival pin categories hidden by the visitor
   progress: 0, // asset loading 0..100
   ready: false, // assets loaded and shaders warmed
   debug: new URLSearchParams(window.location.search).has('debug'),

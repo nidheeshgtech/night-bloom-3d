@@ -986,3 +986,198 @@ input:focus-visible {
     pointer-events: none;
   }
 }
+
+/* Festival: map pins, filters, schedule, next-up banner */
+.poi-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  background: var(--cat);
+  color: #1a1020;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s;
+}
+
+.poi-pin svg {
+  transform: rotate(45deg);
+}
+
+.poi-pin:hover,
+.poi-pin.active {
+  transform: rotate(-45deg) scale(1.2);
+}
+
+@media (hover: hover) {
+  .poi-pin[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 38px;
+    top: -6px;
+    transform: rotate(45deg);
+    transform-origin: left top;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(15, 10, 20, 0.85);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+.cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0 4px 10px;
+}
+
+.cat-chips button {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  width: auto !important;
+  padding: 4px 9px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+.cat-chips button.on {
+  border-color: var(--cat) !important;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.poi-dot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cat);
+  color: #1a1020;
+}
+
+.schedule .sitemap-list button {
+  gap: 14px;
+}
+
+.sched-time {
+  flex: none;
+  width: 44px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule .sitemap-text {
+  flex: 1;
+}
+
+.schedule button.past {
+  opacity: 0.45;
+}
+
+.schedule button.live {
+  border-color: var(--accent);
+}
+
+.live-badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #ff3b5c;
+  color: #fff;
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.06em;
+}
+
+.next-up {
+  position: fixed;
+  top: calc(var(--gutter) + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 300px);
+  padding: 6px 14px 6px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.next-up-clock {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.next-up-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .next-up {
+    top: calc(var(--gutter) + 46px);
+    max-width: calc(100% - 2 * var(--gutter));
+    font-size: 12px;
+  }
+}
+
+/* Overlay panels above in-scene labels (drei Html uses z-index up to ~12). */
+.bar {
+  z-index: 30;
+}
+
+.panel,
+.sitemap,
+.next-up,
+.hint {
+  z-index: 25;
+}
+
+@media (max-width: 640px) {
+  .bar {
+    gap: 0;
+    padding: 4px;
+  }
+
+  .bar .bar-btn,
+  .bar .bar-btn.wide {
+    width: 36px;
+    height: 38px;
+  }
+
+  .bar-primary {
+    max-width: 112px;
+    height: 38px;
+    padding: 0 12px;
+  }
+}
+
+/* Nested inside the blurred bar, the popup's own blur doesn't apply; use a solid backdrop. */
+.explore-pop {
+  background: rgba(20, 14, 26, 0.95);
+}

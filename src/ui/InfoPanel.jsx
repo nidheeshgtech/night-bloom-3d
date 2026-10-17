@@ -6,6 +6,7 @@ import { BUTTERFLIES } from '../lib/butterflies'
 import Icon from './Icon'
 import { ctaFor } from '../brand'
 import { triggerCta } from '../world/BookingPins'
+import { CATEGORIES, EVENT, POIS } from '../event/layout'
 
 function SculptureCard({ id }) {
   const s = getWorld().sculptures.find((sc) => sc.id === id)
@@ -75,6 +76,39 @@ function ButterflyCard({ species }) {
           ))}
         </div>
       </div>
+    </>
+  )
+}
+
+function PoiCard({ id }) {
+  const poi = POIS.find((p) => p.id === id)
+  const cat = CATEGORIES[poi.cat]
+  const next = poi.cat === 'stage' ? EVENT.schedule.find((it) => it.where === poi.id) : null
+  return (
+    <>
+      <p className="eyebrow">
+        <span className="dot" style={{ background: cat.color }} /> {cat.label}
+      </p>
+      <h2>{poi.name}</h2>
+      <p className="tagline">{poi.sub}</p>
+      {next && (
+        <dl className="facts">
+          <div>
+            <dt>On stage</dt>
+            <dd>
+              {next.time} · {next.title}
+            </dd>
+          </div>
+        </dl>
+      )}
+      <button className="btn primary cta-btn" onClick={() => rig.goTo(poi)}>
+        Take me there
+      </button>
+      {(poi.cat === 'info' || poi.cat === 'stage') && (
+        <button className="btn cta-btn" onClick={() => triggerCta(null)}>
+          {ctaFor(null).label}
+        </button>
+      )}
     </>
   )
 }
@@ -149,9 +183,9 @@ export default function InfoPanel() {
   const mode = useGarden((s) => s.mode)
   if (!selected) return null
 
-  const close = () => (mode === 'inspect' ? rig.back() : useGarden.setState({ selected: null }))
+  const close = () => (mode === 'inspect' && selected.kind === 'sculpture' ? rig.back() : useGarden.setState({ selected: null }))
   const body =
-    selected.kind === 'sculpture' ? <SculptureCard id={selected.id} /> : selected.kind === 'zone' ? <ZoneCard id={selected.id} /> : selected.kind === 'butterfly' ? <ButterflyCard species={selected.species} /> : <FlowerCard species={selected.species} />
+    selected.kind === 'sculpture' ? <SculptureCard id={selected.id} /> : selected.kind === 'zone' ? <ZoneCard id={selected.id} /> : selected.kind === 'poi' ? <PoiCard id={selected.id} /> : selected.kind === 'butterfly' ? <ButterflyCard species={selected.species} /> : <FlowerCard species={selected.species} />
 
   return (
     <aside className="panel" aria-live="polite">

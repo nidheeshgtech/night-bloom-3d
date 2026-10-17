@@ -19,5 +19,6 @@ export const rig = {
   lightShow() {},
   stopShow() {},
   siteMap() {},
+  goTo() {},
   closeSiteMap() {},
 }

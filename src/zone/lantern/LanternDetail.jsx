@@ -6,6 +6,7 @@ import { rosetteMaterial } from '../../world/patterns'
 import { useGarden } from '../../lib/store'
 import { LANTERN_PATH_HALF, PLAZA, lanternPath, plazaCenter, reedPositions, LANTERNS } from './layout'
 import { reedGeometry } from './geometry'
+import { EVENT, SECOND_STAGE } from '../../event/layout'
 import { lightArtMaterial } from './lightMaterial'
 import { bulbMat, metalMat, zoneUniforms } from '../materials'
 
@@ -26,7 +27,8 @@ function Plaza() {
 function Reeds() {
   const quality = useGarden((s) => s.quality)
   const mesh = useMemo(() => {
-    const items = reedPositions(REEDS[quality])
+    // Keep reeds off the festival's Lantern Stage when an event preset is active.
+    const items = reedPositions(REEDS[quality]).filter((r) => !EVENT || r.pos.distanceTo(SECOND_STAGE.pos) > SECOND_STAGE.r + 1.2)
     const m = new THREE.InstancedMesh(reedGeometry(), lightArtMaterial({ proximity: true, sway: true, rim: false, strength: 2.2 }), items.length)
     items.forEach((r, i) => {
       m.setMatrixAt(i, new THREE.Matrix4().compose(r.pos, new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), r.hue * 6.28), V(1, r.h, 1)))

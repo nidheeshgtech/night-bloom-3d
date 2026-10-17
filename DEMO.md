@@ -28,6 +28,17 @@
 **Light show** (bottom bar) switches to night, flies to the lakeside and runs a ~55 s drone show
 (8-point star, flower, butterfly, palm, the brand name) with a fireworks finale. Sound on recommended.
 
+## Event mode (festival demo)
+`?brand=festival` turns the world into a fictional winter festival, **Sandglow Festival**: a main
+stage on the lake (LED wall, moving beams), a second stage at Lantern Shore, food truck row, a
+makers and sponsors market, toilets, first aid, info points, a ticketed entrance and parking.
+- Map pins by category; **Explore** filters them and lists every place.
+- Tap a place → **Take me there** walks or flies you to a good viewpoint.
+- **Tonight** (calendar button): the schedule with live/past states; drone show and fireworks
+  items launch the light show. A banner shows "Next in X min" on a fast demo clock.
+- Sponsors, stage names, schedule, dates and ticket link all come from the `event` block of the
+  preset in `src/brand/presets.js`.
+
 ## Client re-skins
 Each client is one entry in `src/brand/presets.js`: name, intro text, accent colour, zone names and
 taglines, booking button labels and URLs, and the text the drones spell. Open with `?brand=<key>`,

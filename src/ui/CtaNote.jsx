@@ -1,6 +1,7 @@
 import { useGarden } from '../lib/store'
 import { zoneById } from '../world/plan'
 import Icon from './Icon'
+import { BRAND } from '../brand'
 
 // Demo stand-in for a client's booking page when no URL is configured.
 export default function CtaNote() {
@@ -13,7 +14,7 @@ export default function CtaNote() {
         <button className="icon-btn panel-close" onClick={close} aria-label="Close">
           <Icon name="close" />
         </button>
-        <p className="eyebrow">{zoneById(note.zoneId)?.name}</p>
+        <p className="eyebrow">{zoneById(note.zoneId)?.name || BRAND.name}</p>
         <h2>{note.label}</h2>
         <p>
           In a client build, this button opens their booking, ticketing or enquiry page, with the zone passed along so

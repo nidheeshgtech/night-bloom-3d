@@ -16,6 +16,9 @@ import ZoneOutlines from './ZoneOutlines'
 import GroundLights from './GroundLights'
 import CityRing from './CityRing'
 import LotusCrown from './LotusCrown'
+import { EVENT } from '../event/layout'
+import EventVenue from '../event/EventVenue'
+import EventPins from '../event/EventPins'
 import LakeReflections from './LakeReflections'
 import Skyline from './Skyline'
 import Pavilions from './Pavilions'
@@ -96,6 +99,8 @@ export default function WorldScene() {
       <GroundLights />
       <CityRing />
       <LotusCrown />
+      {EVENT && <EventVenue />}
+      {EVENT && <EventPins />}
     </>
   )
 }

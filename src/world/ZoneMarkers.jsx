@@ -12,7 +12,7 @@ export default function ZoneMarkers() {
     <Html key={z.id} position={[z.center.x, z.center.y + z.pinHeight, z.center.z]} center zIndexRange={[10, 0]}>
       <button className={`zone-pin ${focus === z.id ? 'active' : ''} ${z.status}`} onClick={() => rig.focusZone(z.id)}>
         <span className="zone-pin-name">{z.name}</span>
-        <span className="zone-pin-theme">{z.status === 'open' ? z.theme : `${z.theme} · planned`}</span>
+        <span className="zone-pin-theme">{z.status === 'open' ? z.theme : `${z.theme} · opening soon`}</span>
       </button>
     </Html>
   ))

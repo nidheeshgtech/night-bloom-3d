@@ -9,15 +9,33 @@ import Joystick from './Joystick'
 import Icon from './Icon'
 
 function Intro({ leaving, onGone }) {
+  const ready = useGarden((s) => s.ready)
+  const progress = useGarden((s) => s.progress)
+  const start = (tour) => {
+    useGarden.setState({ mode: 'aerial' })
+    if (tour) setTimeout(() => rig.tour(), 50)
+  }
   return (
     <div className={`intro ${leaving ? 'leaving' : ''}`} onTransitionEnd={() => leaving && onGone()}>
       <div className="intro-card">
         <p className="eyebrow">Interactive WebGL garden</p>
         <h1>Night Bloom</h1>
         <p className="lede">Fly over thousands of living flowers, walk the paths, and stay for nightfall.</p>
-        <button className="btn primary" onClick={() => useGarden.setState({ mode: 'aerial' })}>
-          Explore the garden
-        </button>
+        {ready ? (
+          <div className="intro-actions">
+            <button className="btn primary" onClick={() => start(true)}>
+              Watch the tour
+            </button>
+            <button className="btn" onClick={() => start(false)}>
+              Explore the garden
+            </button>
+          </div>
+        ) : (
+          <div className="loader" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+            <div className="loader-bar" style={{ width: `${Math.max(progress, 4)}%` }} />
+            <span>{progress < 100 ? `Growing the garden… ${progress}%` : 'Opening the gates…'}</span>
+          </div>
+        )}
         <p className="fine">Original concept by Nidheesh. Not affiliated with any existing attraction.</p>
       </div>
     </div>
@@ -25,7 +43,9 @@ function Intro({ leaving, onGone }) {
 }
 
 function PerfOverlay() {
+  const debug = useGarden((s) => s.debug)
   const { fps, calls, triangles } = usePerf()
+  if (!debug) return null
   return (
     <div className="perf">
       {fps} fps · {calls} draw calls · {(triangles / 1000).toFixed(0)}k tris
@@ -53,10 +73,40 @@ export default function Hud() {
   const [introGone, setIntroGone] = useState(false)
 
   useEffect(() => () => audio.stop(), [])
+  // Backtick toggles the developer stats overlay.
+  useEffect(() => {
+    const onKey = (e) => e.key === '`' && useGarden.setState((s) => ({ debug: !s.debug }))
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+  const caption = useGarden((s) => s.caption)
+  const here = useGarden((s) => s.here)
 
   const toggleAudio = () => {
     audioOn ? audio.stop() : audio.start()
     set({ audio: !audioOn })
+  }
+
+  if (mode === 'tour') {
+    return (
+      <div className="hud">
+        <header className="brand">
+          <span className="brand-mark" />
+          Night Bloom
+        </header>
+        {caption && (
+          <div className="caption" key={caption.title + caption.sub}>
+            <h2>{caption.title}</h2>
+            <p>{caption.sub}</p>
+          </div>
+        )}
+        <div className="dock">
+          <button className="btn" onClick={rig.stopTour}>
+            Take control
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (photo) {
@@ -78,7 +128,8 @@ export default function Hud() {
   const focused = zones.find((z) => z.id === focus)
   // Aerial world view lists zones; otherwise the inspectable features of the current zone.
   const showZones = mode === 'aerial' && !focused && zones.length > 0
-  const features = world.sculptures.filter((s) => !s.zone || !focused || s.zone === focused.id)
+  const area = mode === 'walk' ? here : focused?.id
+  const features = world.sculptures.filter((s) => !s.zone || !area || s.zone === area)
   const canTravel = mode === 'aerial' || mode === 'walk' || mode === 'inspect'
 
   return (
@@ -132,7 +183,12 @@ export default function Hud() {
               World view
             </button>
           )}
-          {mode === 'aerial' && (
+          {mode === 'aerial' && !focused && (
+            <button className="btn" onClick={rig.tour}>
+              Tour
+            </button>
+          )}
+          {mode === 'aerial' && focused?.status !== 'soon' && (
             <button className="btn primary" onClick={rig.enter}>
               {focused ? `Enter ${focused.name}` : 'Enter the garden'}
             </button>

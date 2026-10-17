@@ -7,6 +7,11 @@ export const useGarden = create((set) => ({
   mode: 'intro', // intro | aerial | flying | walk | inspect
   selected: null, // { kind: 'sculpture' | 'zone', id } | { kind: 'flower', index, species }
   focus: null, // zone id the aerial camera is framing
+  here: null, // zone id the walking visitor is currently in
+  caption: null, // { title, sub } during the tour
+  progress: 0, // asset loading 0..100
+  ready: false, // assets loaded and shaders warmed
+  debug: new URLSearchParams(window.location.search).has('debug'),
   discovered: [], // species indices the visitor has clicked
   discoveredButterflies: [], // butterfly species indices identified
   night: 0, // 0 = golden hour, 1 = night

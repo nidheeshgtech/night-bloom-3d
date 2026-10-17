@@ -11,6 +11,7 @@ import CameraRig from './scene/CameraRig'
 import Interaction from './scene/Interaction'
 import Effects from './scene/Effects'
 import Perf from './scene/Perf'
+import Warmup from './scene/Warmup'
 import Hud from './ui/Hud'
 import { useGarden } from './lib/store'
 import BotanyPreview from './zone/BotanyPreview'
@@ -65,6 +66,7 @@ export default function App() {
         <CameraRig />
         <Interaction />
         <Perf />
+        <Warmup />
         {quality === 'high' && (isZone ? <ZoneEffects /> : <Effects />)}
       </Canvas>
       <Hud />

@@ -106,6 +106,52 @@ export default function CameraRig() {
       fly(pos, target, { duration: 2.6, arc: 10, onDone: () => toOrbit(target, 'aerial') })
     }
 
+    // Hands-off cinematic tour along the world's tour segments.
+    rig.tour = () => {
+      if (!world.tour) return
+      tween.current?.kill()
+      const segs = world.tour()
+      const tl = gsap.timeline()
+      const look = new THREE.Vector3()
+      const night = { v: useGarden.getState().night }
+      let prevPos = camera.position.clone()
+      let prevLook = currentLook()
+      set({ mode: 'tour', selected: null, focus: null, caption: null })
+      segs.forEach((seg) => {
+        const pc = new THREE.CatmullRomCurve3([prevPos, ...seg.pos], false, 'centripetal')
+        const lc = new THREE.CatmullRomCurve3([prevLook, ...seg.look], false, 'centripetal')
+        const st = { t: 0 }
+        tl.call(() => set({ caption: { title: seg.caption, sub: seg.sub } }))
+        tl.to(st, {
+          t: 1,
+          duration: seg.duration,
+          ease: seg.ease || 'power1.inOut',
+          onUpdate: () => {
+            camera.position.copy(pc.getPointAt(st.t))
+            camera.lookAt(lc.getPointAt(st.t, look))
+          },
+        })
+        if (seg.night !== undefined) {
+          tl.to(night, { v: seg.night, duration: seg.duration, ease: 'sine.inOut', onUpdate: () => set({ night: night.v }) }, '<')
+        }
+        prevPos = seg.pos[seg.pos.length - 1]
+        prevLook = seg.look[seg.look.length - 1]
+      })
+      tl.call(() => rig.stopTour())
+      tween.current = tl
+    }
+
+    rig.stopTour = () => {
+      if (useGarden.getState().mode !== 'tour') return
+      tween.current?.kill()
+      const dir = new THREE.Vector3()
+      camera.getWorldDirection(dir)
+      // Orbit around the point the camera was looking at, on the ground.
+      const t = dir.y < -0.05 ? -camera.position.y / dir.y : 30
+      controls.current.target.copy(camera.position).addScaledVector(dir, Math.min(t, 250))
+      set({ mode: 'aerial', caption: null })
+    }
+
     rig.toAerial = () => {
       set({ selected: null, focus: null })
       const { target, distance, height } = world.aerial
@@ -161,7 +207,8 @@ export default function CameraRig() {
       keys.current[e.code] = true
       if (e.code === 'Escape') {
         const st = useGarden.getState()
-        if (st.photo) st.set({ photo: false })
+        if (st.mode === 'tour') rig.stopTour()
+        else if (st.photo) st.set({ photo: false })
         else if (st.mode === 'inspect') rig.back()
         else if (st.selected) st.set({ selected: null })
       }
@@ -231,6 +278,18 @@ export default function CameraRig() {
     camera.position.set(nx, player.pos.y + bob, nz)
     camera.rotation.set(player.pitch, player.yaw, 0)
     shared.uPlayer.value.set(nx, 0, nz)
+    // Which zone is the visitor in? Drives the feature chips.
+    if (world.zones) {
+      let here = null
+      if (Math.hypot(nx, nz) > 60) {
+        const a = Math.atan2(nz, nx)
+        here = world.zones.reduce((best, z) => {
+          const d = Math.abs(Math.atan2(Math.sin(a - z.a), Math.cos(a - z.a)))
+          return !best || d < best.d ? { id: z.id, d } : best
+        }, null).id
+      }
+      if (here !== useGarden.getState().here) useGarden.setState({ here })
+    }
   })
 
   const orbiting = mode === 'intro' || mode === 'aerial' || mode === 'inspect'

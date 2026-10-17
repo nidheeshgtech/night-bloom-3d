@@ -85,7 +85,7 @@ function ZoneCard({ id }) {
       <h2>{z.name}</h2>
       <p className="tagline">{z.tagline}</p>
       <p>{z.description}</p>
-      <p className={`status ${z.status}`}>{z.status === 'open' ? 'Open: enter to explore' : 'Planned for a later phase. Gate, hedges and borders are in place.'}</p>
+      <p className={`status ${z.status}`}>{z.status === 'open' ? 'Open: enter to explore' : 'Opening soon. The flower carpet is planted; the garden inside is still being built.'}</p>
     </>
   )
 }

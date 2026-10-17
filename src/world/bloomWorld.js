@@ -7,6 +7,7 @@ import { QUAY_RADIUS, heightAt } from './terrain'
 import { WORLD_RADIUS, ZONES, spokes } from './plan'
 import { petalBeds } from './petalPlanting'
 import { PROMENADE_PALMS, TREES } from './TreeBelts'
+import { buildTour } from './tour'
 import { GH, POND, SPRING, WALLS, glassCenter, halfWidth, inside as insideGlasshouse, toWorld as wingToWorld } from '../zone/wingsong/layout'
 import { getWingsongTargets } from '../zone/wingsong/library'
 import { PALMS_IN } from '../zone/wingsong/planting'
@@ -260,4 +261,5 @@ export const bloomWorld = {
   aerial: { target: new THREE.Vector3(0, 0, 12), distance: 235, height: 165 },
   camera: { position: [0, 165, 247], far: 1600 },
   orbit: { min: 12, max: 380 },
+  tour: buildTour,
 }

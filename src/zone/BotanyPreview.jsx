@@ -24,7 +24,7 @@ export default function BotanyPreview() {
   useFrame(({ clock }) => (zoneUniforms.uTime.value = clock.elapsedTime))
   return (
     <>
-      <Environment files="/assets/hdri/autumn_field_puresky_2k.hdr" background environmentIntensity={0.6} />
+      <Environment files={`${import.meta.env.BASE_URL}assets/hdri/autumn_field_puresky_2k.hdr`} background environmentIntensity={0.6} />
       <directionalLight position={[7, 4.9, 5.2]} intensity={3} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0003}>
         <orthographicCamera attach="shadow-camera" args={[-1, 1, 1, -1, 0.1, 30]} />
       </directionalLight>

@@ -101,8 +101,8 @@ export default function ZoneLighting() {
 
   return (
     <>
-      <Environment files="/assets/hdri/autumn_field_puresky_2k.hdr" background />
-      <fogExp2 attach="fog" args={['#cdd9e6', 0.0017]} />
+      <Environment files={`${import.meta.env.BASE_URL}assets/hdri/autumn_field_puresky_2k.hdr`} background />
+      <fogExp2 attach="fog" args={['#cdd9e6', 0.0011]} />
       <primitive object={sun} />
       <primitive object={sun.target} />
       {lightSpots.map((p, i) => (

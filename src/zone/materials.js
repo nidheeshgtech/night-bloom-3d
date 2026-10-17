@@ -82,7 +82,7 @@ export function pbrSet(name, repeat) {
   const key = `${name}:${repeat}`
   if (cache.has(key)) return cache.get(key)
   const load = (file, srgb) => {
-    const t = loader.load(`/assets/textures/${name}/${file}.jpg`)
+    const t = loader.load(`${import.meta.env.BASE_URL}assets/textures/${name}/${file}.jpg`)
     t.wrapS = t.wrapT = THREE.RepeatWrapping
     t.repeat.set(repeat, repeat)
     t.anisotropy = 8

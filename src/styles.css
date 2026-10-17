@@ -561,3 +561,72 @@ input:focus-visible {
   font-size: 12px;
   color: var(--ink-faint);
 }
+
+.intro-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.loader {
+  position: relative;
+  width: min(320px, 100%);
+  margin: 0 auto;
+  padding-top: 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.loader::before,
+.loader-bar {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.loader::before {
+  right: 0;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.loader-bar {
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+/* Tour captions */
+.caption {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 2 * var(--gutter));
+  text-align: center;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  animation: caption-in 1.2s ease both;
+  pointer-events: none;
+}
+
+.caption h2 {
+  margin: 0 0 6px;
+  font-size: clamp(26px, 4vw, 42px);
+  letter-spacing: -0.02em;
+}
+
+.caption p {
+  margin: 0;
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: var(--ink-soft);
+}
+
+@keyframes caption-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+}

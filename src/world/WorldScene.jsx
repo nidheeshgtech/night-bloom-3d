@@ -20,12 +20,12 @@ const CONTENT = {
   wingsong: {
     landmark: lazy(() => import('../zone/wingsong/Glasshouse')),
     detail: lazy(() => import('../zone/wingsong/WingsongDetail')),
-    radius: 120,
+    radius: Infinity,
   },
   lantern: {
     landmark: lazy(() => import('../zone/lantern/LanternLandmark')),
     detail: lazy(() => import('../zone/lantern/LanternDetail')),
-    radius: 120,
+    radius: Infinity,
   },
 }
 

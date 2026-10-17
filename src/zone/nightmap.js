@@ -12,15 +12,6 @@ import { LANTERNS, lanternPath, plazaCenter } from './lantern/layout'
 import { C as HC, PAV, POOL, QUARTERS, quarterCentre, toWorld as herb } from './herbarium/layout'
 
 const RES = 1024
-// Each zone's accent colour for its border uplighting.
-const ZONE_ACCENT = {
-  bloom: '#ff5fb0',
-  herbarium: '#ffc35a',
-  wingsong: '#ff9d3a',
-  canopy: '#3fe0c0',
-  dreamroot: '#a86bff',
-  lantern: '#5aa8ff',
-}
 
 // Paints the night light map: additive radial pools of coloured light, world top-down.
 export function buildNightMap() {
@@ -70,7 +61,7 @@ export function buildNightMap() {
 
   // Every petal: coloured uplighting along its flower border.
   for (const z of ZONES) {
-    for (const { path, inward } of z.sides) alongPath(path, 5, inward * 1.9, 3.6, ZONE_ACCENT[z.id], 0.6)
+    for (const { path, inward } of z.sides) alongPath(path, 5, inward * 1.9, 3.6, z.color, 0.6)
   }
 
   // Wingsong Conservatory: warm path, cyan stream, gentle glow under the glass.

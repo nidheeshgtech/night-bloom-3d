@@ -96,7 +96,8 @@ export default function Ground() {
 // Wind-sculpted dunes from just under the detailed ground out to the horizon.
 export function duneHeight(x, z) {
   const r = Math.hypot(x, z)
-  const rise = Math.min(1, Math.max(0, (r - 235) / 120))
+  // Dunes rise beyond the garden and settle again where the city begins (~340 m).
+  const rise = Math.min(1, Math.max(0, (r - 235) / 40)) * (1 - Math.min(1, Math.max(0, (r - 300) / 45)))
   // Ridges run across the prevailing wind; a second set breaks up the regularity.
   const u = x * 0.8 + z * 0.6
   const v = -x * 0.6 + z * 0.8

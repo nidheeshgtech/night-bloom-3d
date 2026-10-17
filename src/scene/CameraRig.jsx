@@ -25,6 +25,7 @@ export default function CameraRig() {
   const world = getWorld()
   const mode = useGarden((s) => s.mode)
   const showOn = useGarden((s) => s.show !== null)
+  const siteMapOn = useGarden((s) => s.siteMap)
   const camera = useThree((s) => s.camera)
   const scene = useThree((s) => s.scene)
   const gl = useThree((s) => s.gl)
@@ -96,7 +97,7 @@ export default function CameraRig() {
     rig.enter = () => {
       const zone = world.zones?.find((z) => z.id === useGarden.getState().focus)
       const { pos, yaw } = zone ? zone.spawn : world.spawn
-      set({ selected: null })
+      set({ selected: null, siteMap: false })
       fly(pos.clone(), pos.clone().add(forward(yaw, WALK_PITCH).multiplyScalar(10)), {
         duration: 3.4,
         arc: 12,
@@ -111,7 +112,7 @@ export default function CameraRig() {
       const target = zone.center.clone().setY(zone.center.y + 1)
       const out = new THREE.Vector3(zone.dir.x, 0, zone.dir.y)
       const pos = target.clone().addScaledVector(out, -58).setY(target.y + 42)
-      set({ focus: id, selected: { kind: 'zone', id } })
+      set({ focus: id, selected: { kind: 'zone', id }, siteMap: false })
       fly(pos, target, { duration: 2.6, arc: 10, onDone: () => toOrbit(target, 'aerial') })
     }
 
@@ -147,6 +148,19 @@ export default function CameraRig() {
       fly(new THREE.Vector3(0, 9, 118), target, { duration: 3, arc: 6, onDone: () => (toOrbit(target, 'aerial'), start()) })
     }
     rig.stopShow = () => set({ show: null })
+
+    // Infographic site-map view: high oblique view, numbered badges, glowing outlines.
+    rig.siteMap = () => {
+      const st = useGarden.getState()
+      if (st.mode !== 'aerial') return
+      const target = new THREE.Vector3(0, 0, 8)
+      set({ siteMap: true, focus: null, selected: null })
+      fly(new THREE.Vector3(0, 285, 175), target, { duration: 2.6, onDone: () => toOrbit(target, 'aerial') })
+    }
+    rig.closeSiteMap = () => {
+      set({ siteMap: false })
+      rig.toAerial()
+    }
 
     // Hands-off cinematic tour along the world's tour segments.
     rig.tour = () => {
@@ -366,7 +380,7 @@ export default function CameraRig() {
       ref={controls}
       makeDefault
       enabled={orbiting}
-      autoRotate={orbiting && !showOn}
+      autoRotate={orbiting && !showOn && !siteMapOn}
       autoRotateSpeed={mode === 'inspect' ? 0.6 : 0.35}
       enableDamping
       dampingFactor={0.06}

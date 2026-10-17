@@ -15,4 +15,6 @@ export const rig = {
   },
   lightShow() {},
   stopShow() {},
+  siteMap() {},
+  closeSiteMap() {},
 }

@@ -6,6 +6,7 @@ import { getWorld } from '../lib/world'
 import { capturePhoto } from './capture'
 import InfoPanel from './InfoPanel'
 import CtaNote from './CtaNote'
+import SiteMap from './SiteMap'
 import Icon from './Icon'
 import { BRAND } from '../brand'
 
@@ -83,6 +84,7 @@ export default function Hud() {
   const caption = useGarden((s) => s.caption)
   const here = useGarden((s) => s.here)
   const showOn = useGarden((s) => s.show !== null)
+  const siteMapOn = useGarden((s) => s.siteMap)
 
   const toggleAudio = () => {
     audioOn ? audio.stop() : audio.start()
@@ -191,6 +193,11 @@ export default function Hud() {
               Tour
             </button>
           )}
+          {mode === 'aerial' && !focused && world.zones && (
+            <button className="btn" onClick={siteMapOn ? rig.closeSiteMap : rig.siteMap}>
+              <Icon name="map" /> {siteMapOn ? 'Close map' : 'Site map'}
+            </button>
+          )}
           {mode === 'aerial' && focused?.status !== 'soon' && (
             <button className="btn primary" onClick={rig.enter}>
               {focused ? `Enter ${focused.name}` : 'Enter the garden'}
@@ -234,6 +241,7 @@ export default function Hud() {
 
       <InfoPanel />
       <CtaNote />
+      <SiteMap />
     </div>
   )
 }

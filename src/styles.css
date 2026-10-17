@@ -478,10 +478,9 @@ input:focus-visible {
 /* Aerial zone pins */
 .zone-pin {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1px;
-  padding: 7px 14px;
+  gap: 9px;
+  padding: 6px 14px 6px 6px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-strong);
@@ -678,5 +677,106 @@ input:focus-visible {
   .dock-row {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+.zone-pin-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.zone-pin-num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--zone, var(--accent));
+  color: #1a1020;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 0 12px var(--zone, var(--accent));
+}
+
+.zone-pin.compact {
+  padding: 4px;
+}
+
+/* Site map legend */
+.sitemap {
+  position: fixed;
+  top: 72px;
+  left: var(--gutter);
+  width: 300px;
+  max-height: calc(100% - 200px);
+  overflow-y: auto;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--glass-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: panel-in 0.35s ease;
+}
+
+.sitemap h2 {
+  margin: 6px 0 4px;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+}
+
+.sitemap-lede {
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.sitemap-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sitemap-list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: left;
+}
+
+.sitemap-list button:hover {
+  border-color: var(--zone);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sitemap-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.sitemap-text span {
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .sitemap {
+    top: auto;
+    bottom: 150px;
+    width: auto;
+    right: var(--gutter);
+    max-height: 40vh;
+    padding: 16px;
   }
 }

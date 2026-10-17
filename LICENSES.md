@@ -29,6 +29,8 @@ for traceability. Check the asset pages again before publishing in case anything
 - Hibiscus, lantana, fern and alocasia plants; butterfly wing patterns (drawn from general field-guide
   descriptions of each species, not traced from photographs); Seed Lanterns, Light Reeds and Moon
   Lilies: all generated in code in `src/zone/`.
+- Lotus Crown, zone light outlines, city ring and street lights: original designs generated in code.
+  The Lotus Crown is deliberately unlike any existing landmark (open petal fins, not a lattice dome).
 - Skyline: generic procedural towers, deliberately not modelled on any real building.
 - Herbarium Walk (chahar bagh layout, domed pavilion, fountain, fruit trees): original design in
   code, after the traditional four-part garden form.

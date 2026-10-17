@@ -12,6 +12,10 @@ import ZoneMarkers from './ZoneMarkers'
 import PromenadeLamps from './PromenadeLamps'
 import BookingPins from './BookingPins'
 import LightShow from './LightShow'
+import ZoneOutlines from './ZoneOutlines'
+import GroundLights from './GroundLights'
+import CityRing from './CityRing'
+import LotusCrown from './LotusCrown'
 import LakeReflections from './LakeReflections'
 import Skyline from './Skyline'
 import Pavilions from './Pavilions'
@@ -88,6 +92,10 @@ export default function WorldScene() {
       <ZoneMarkers />
       <BookingPins />
       <LightShow />
+      <ZoneOutlines />
+      <GroundLights />
+      <CityRing />
+      <LotusCrown />
     </>
   )
 }

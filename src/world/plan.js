@@ -16,6 +16,7 @@ const deg = (d) => (d * Math.PI) / 180
 const DEFS = [
   {
     id: 'bloom',
+    color: '#ff5fb0',
     name: 'Bloom Terraces',
     theme: 'Flower kingdom',
     angle: 90,
@@ -26,6 +27,7 @@ const DEFS = [
   },
   {
     id: 'herbarium',
+    color: '#ffc35a',
     name: 'Herbarium Walk',
     theme: 'Botanical garden',
     angle: 30,
@@ -36,6 +38,7 @@ const DEFS = [
   },
   {
     id: 'wingsong',
+    color: '#ff9d3a',
     name: 'Wingsong Conservatory',
     theme: 'Butterfly sanctuary',
     angle: -30,
@@ -47,6 +50,7 @@ const DEFS = [
   },
   {
     id: 'canopy',
+    color: '#3fe0c0',
     name: 'Canopy Hollow',
     theme: 'Tropical rainforest',
     angle: -90,
@@ -57,6 +61,7 @@ const DEFS = [
   },
   {
     id: 'dreamroot',
+    color: '#a86bff',
     name: 'Dreamroot Wilds',
     theme: 'Fantasy realm',
     angle: -150,
@@ -67,6 +72,7 @@ const DEFS = [
   },
   {
     id: 'lantern',
+    color: '#5aa8ff',
     name: 'Lantern Shore',
     theme: 'Light garden',
     angle: 150,

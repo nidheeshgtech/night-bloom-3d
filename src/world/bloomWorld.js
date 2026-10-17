@@ -15,6 +15,7 @@ import { PATH_HALF, avenue } from '../zone/layout'
 import { PATH_HALF_IN, innerPath } from '../zone/wingsong/layout'
 import { LANTERN_PATH_HALF, lanternPath } from '../zone/lantern/layout'
 import { PAVILIONS } from './Pavilions'
+import { LOTUS } from './LotusCrown'
 import { HERB_FEATURES } from '../zone/herbarium/features'
 import { HERB_WALLS, PAV_CORNERS, C as HERB_C, toWorld as herbToWorld } from '../zone/herbarium/layout'
 import { CYPRESSES, FRUIT_TREES, HERB_GHAF, HERB_PALMS, getHerbHeads } from '../zone/herbarium/planting'
@@ -152,6 +153,24 @@ const sculptures = [
     pick: [(() => { const p = wingToWorld(SPRING[0] + 1, SPRING[1], 0.6); return [p.x, p.y, p.z, 1.6] })()],
   },
   ...HERB_FEATURES,
+  {
+    id: 'lotus',
+    kind: 'Centrepiece',
+    name: 'The Lotus Crown',
+    tagline: 'Eighteen light-filled petals rising from the lake',
+    description:
+      'An island sculpture of two rings of curved petal fins, the tallest about 19 m. Pearl-white by day; after dark colour flows up the petals and around the crown, and the drone show gathers above it.',
+    flowers: [],
+    facts: [
+      ['Height', `≈${LOTUS.height} m`],
+      ['Petals', '18, in two rings'],
+      ['Best seen', 'From the promenade at night'],
+    ],
+    center: new THREE.Vector3(0, 8, 0),
+    viewDistance: 30,
+    viewHeight: -2,
+    pick: [[0, 6, 0, 6], [0, 14, 0, 5]],
+  },
   {
     id: 'seedlanterns',
     zone: 'lantern',

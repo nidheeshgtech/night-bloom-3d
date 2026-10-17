@@ -11,6 +11,7 @@ export const useGarden = create((set) => ({
   caption: null, // { title, sub } during the tour
   ctaNote: null, // demo booking note { label, zoneId }
   show: null, // light show start time (zoneUniforms.uTime) or null
+  siteMap: false, // infographic site-map view (aerial)
   progress: 0, // asset loading 0..100
   ready: false, // assets loaded and shaders warmed
   debug: new URLSearchParams(window.location.search).has('debug'),

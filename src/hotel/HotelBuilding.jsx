@@ -7,19 +7,21 @@ import { zoneUniforms, bulbMat } from '../zone/materials'
 import { withNightLight } from '../zone/nightlight'
 import { rosetteMaterial } from '../world/patterns'
 import { V, archPanel, boxAt, clean, cylAt, prism, textTexture } from './geom'
+import { detailed } from './materials'
 import { CRESCENT, FLOOR_H, LAND_Y, LOBBY_H, SUITE, SUITE_Y, TOWER, TOWER_TOP, arcPoint, floorY, wingFloors } from './layout'
 
 // Facade: sandstone-white walls, window grid, night: warm windows, amber uplight from the base,
 // lit band under the roofline. uv = (metres along the wall, metres up).
 function facadeMaterial() {
-  const m = new THREE.MeshStandardMaterial({ color: '#efe6d8', roughness: 0.75 })
+  const m = new THREE.MeshStandardMaterial({ color: '#efe6d8', roughness: 0.8 })
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uNight = zoneUniforms.uNight
+    shader.uniforms.uTime = zoneUniforms.uTime
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vF;\nvarying vec3 vFN;')
       .replace('#include <uv_vertex>', '#include <uv_vertex>\nvF = uv;\nvFN = normalize(mat3(modelMatrix) * normal);')
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uNight;\nvarying vec2 vF;\nvarying vec3 vFN;\nfloat fh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
+      .replace('#include <common>', '#include <common>\nuniform float uNight;\nuniform float uTime;\nvarying vec2 vF;\nvarying vec3 vFN;\nfloat fh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
@@ -28,20 +30,48 @@ function facadeMaterial() {
         vec2 cell = vec2(vF.x / 3.6, (vF.y - ${(LAND_Y + LOBBY_H).toFixed(2)}) / ${FLOOR_H.toFixed(2)});
         vec2 f = fract(cell);
         float win = wall ? upper * step(0.16, f.x) * step(f.x, 0.84) * step(0.18, f.y) * step(f.y, 0.86) : 0.0;
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.22, 0.27), win);`,
+        // Bronze window frame and a centre mullion around each opening.
+        float frame = wall ? upper * step(0.13, f.x) * step(f.x, 0.87) * step(0.15, f.y) * step(f.y, 0.89) * (1.0 - win) : 0.0;
+        float mull = win * (1.0 - step(0.012, abs(f.x - 0.5)));
+        // Glass: dark, slightly blue-green; curtains drawn part-way in some rooms.
+        float rnd = fh(floor(cell) + floor(vFN.xz * 3.0));
+        float curtain = win * step(0.55, rnd) * (1.0 - smoothstep(0.16, 0.3 + 0.2 * fh(floor(cell) + 3.0), min(f.x, 1.0 - f.x)));
+        vec3 glassC = mix(vec3(0.035, 0.05, 0.06), vec3(0.62, 0.55, 0.45), curtain);
+        // Balcony slab above shades the top of the window.
+        glassC *= mix(0.55, 1.0, smoothstep(0.86, 0.5, f.y));
+        diffuseColor.rgb = mix(diffuseColor.rgb, glassC, win);
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.11, 0.07), max(frame, mull));
+        float glassMask = win * (1.0 - curtain) * (1.0 - mull);`,
+      )
+      .replace(
+        '#include <roughnessmap_fragment>',
+        `#include <roughnessmap_fragment>
+        roughnessFactor = mix(roughnessFactor, 0.05, glassMask);
+        roughnessFactor = mix(roughnessFactor, 0.35, max(frame, mull));`,
+      )
+      .replace(
+        '#include <metalnessmap_fragment>',
+        `#include <metalnessmap_fragment>
+        // Solar-control glass reads as a soft mirror of the sky; frames are anodised metal.
+        metalnessFactor = mix(metalnessFactor, 0.55, glassMask);
+        metalnessFactor = mix(metalnessFactor, 0.8, max(frame, mull));`,
       )
       .replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
         if (wall) {
-          float lit = step(0.42, fh(floor(cell) + floor(vFN.xz * 3.0)));
-          vec3 warm = mix(vec3(1.0, 0.74, 0.45), vec3(1.0, 0.86, 0.66), fh(floor(cell) + 7.0));
-          float wash = (1.0 - smoothstep(0.0, 14.0, vF.y)) * 0.55;
-          totalEmissiveRadiance += (warm * lit * win * 1.4 + vec3(1.0, 0.72, 0.42) * wash * (1.0 - win)) * uNight;
+          float lit = step(0.5, rnd);
+          vec3 warm = mix(vec3(1.0, 0.62, 0.32), vec3(1.0, 0.8, 0.55), fh(floor(cell) + 7.0));
+          // Night: a slow colour wash rolls along the crescent (gold, rose, sea teal).
+          float ph = vF.x * 0.012 - uTime * 0.05;
+          vec3 wc = 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) * 0.35 + ph + vec3(0.0, 0.1, 0.25)));
+          vec3 washC = mix(vec3(1.0, 0.72, 0.42), wc * vec3(1.0, 0.8, 0.95), 0.55);
+          float wash = (1.0 - smoothstep(0.0, 14.0, vF.y)) * 0.6;
+          totalEmissiveRadiance += (warm * lit * win * (1.0 - mull) * 1.5 + washC * wash * (1.0 - win) * (1.0 - frame)) * uNight;
         }`,
       )
   }
-  return withNightLight(m)
+  return withNightLight(detailed(m, 'white_stucco', { scale: 0.5, mapping: 'uv', detail: 0.35 }))
 }
 
 // Glass curtain wall with mullions; nearly clear face-on, reflective at grazing angles.
@@ -77,6 +107,7 @@ function buildingParts() {
   const white = []
   const glass = []
   const core = []
+  const fins = []
   const { r0, r1 } = CRESCENT
   // --- Wings: prism per 2° segment, balconies on the sea side, arcade at ground level.
   for (const [a0, a1] of [CRESCENT.east, CRESCENT.west]) {
@@ -134,7 +165,7 @@ function buildingParts() {
     else core.push(prism([[-11.5, 45], [11.5, 45], [11.5, 55], [-11.5, 55]], y0, y1, { roof: false }))
   }
   // Fins: slim vertical mashrabiya-like fins across the tower front above the lobby.
-  for (let i = 0; i <= 14; i++) white.push(boxAt(0.18, TOWER_TOP - LAND_Y - LOBBY_H, 0.7, x0 + i * 2, (TOWER_TOP + LAND_Y + LOBBY_H) / 2, z0 - 0.6))
+  for (let i = 0; i <= 14; i++) fins.push(boxAt(0.18, TOWER_TOP - LAND_Y - LOBBY_H, 0.7, x0 + i * 2, (TOWER_TOP + LAND_Y + LOBBY_H) / 2, z0 - 0.6))
   // Roof cap.
   white.push(boxAt(x1 - x0 + 1.2, 0.7, z1 - z0 + 1.2, 0, TOWER_TOP + 0.35, (z0 + z1) / 2))
   return {
@@ -142,7 +173,31 @@ function buildingParts() {
     white: mergeGeometries(white.map((g) => clean(g))),
     glass: mergeGeometries(glass.map((g) => clean(g))),
     core: mergeGeometries(core),
+    fins: mergeGeometries(fins),
   }
+}
+
+// Tower fins: white by day; at night a slow light wave climbs the LED edge of each fin.
+function finMaterial() {
+  const m = new THREE.MeshStandardMaterial({ color: '#f6f1e8', roughness: 0.5, metalness: 0.1 })
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uNight = zoneUniforms.uNight
+    shader.uniforms.uTime = zoneUniforms.uTime
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vFw;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvFw = (modelMatrix * vec4(transformed, 1.0)).xyz;')
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uNight;\nuniform float uTime;\nvarying vec3 vFw;')
+      .replace(
+        '#include <emissivemap_fragment>',
+        `#include <emissivemap_fragment>
+        float y = (vFw.y - ${(LAND_Y + LOBBY_H).toFixed(1)}) / ${(TOWER_TOP - LAND_Y - LOBBY_H).toFixed(1)};
+        float wave = 0.35 + 0.65 * pow(0.5 + 0.5 * sin((y * 3.0 - uTime * 0.25 + vFw.x * 0.03) * 6.2831), 3.0);
+        vec3 led = mix(vec3(1.0, 0.78, 0.45), vec3(1.0, 0.92, 0.75), y);
+        totalEmissiveRadiance += led * wave * 1.6 * uNight;`,
+      )
+  }
+  return m
 }
 
 // Lantern crown: eight ribs rising from the roof and curving in to a gold finial.
@@ -170,12 +225,16 @@ function crownGeometry() {
 function lobbyParts() {
   const parts = []
   const y = LAND_Y
-  parts.push(boxAt(27.4, 0.1, 15.6, 0, y + 0.05, 50, '#e9e2d6'))
   // Reception desk (curved front) against the back wall.
-  for (let i = 0; i < 9; i++) {
-    const a = Math.PI + (i / 8) * Math.PI
-    parts.push(boxAt(1.3, 1.1, 0.7, Math.cos(a) * -5.2, y + 0.55, 56.2 + Math.sin(a) * 1.2, '#3b2a20'))
+  // Curved walnut desk front with a pale stone top and a gold kick line.
+  const arc = (r, h, y0, color, thick = 0) => {
+    const g = new THREE.CylinderGeometry(r, r, h, 40, 1, !thick, Math.PI * 0.62, Math.PI * 0.76)
+    g.scale(1, 1, 0.32).translate(0, y + y0 + h / 2, 57.6)
+    parts.push(clean(g, color))
   }
+  arc(5.4, 1.05, 0.05, '#4a3324')
+  arc(5.55, 0.08, 1.1, '#efe6d6', 1)
+  arc(5.42, 0.06, 0.06, '#c9a35a')
   parts.push(boxAt(9, 4.2, 0.2, 0, y + 2.1, 57.6, '#7a5a3c'))
   // Columns.
   for (const x of [-9, 9]) for (const z of [45, 54]) parts.push(cylAt(0.45, 0.45, LOBBY_H, x, y + LOBBY_H / 2, z, 20, '#f4efe6'))
@@ -211,8 +270,7 @@ function suiteParts() {
   const parts = []
   const y = SUITE_Y
   const { x0, x1, z0, z1 } = SUITE
-  parts.push(boxAt(x1 - x0, 0.06, z1 - z0, (x0 + x1) / 2, y + 0.23, (z0 + z1) / 2, '#a57a52'))
-  parts.push(boxAt(6, 0.03, 4.4, -7, y + 0.27, 50, '#bfa888'))
+  parts.push(boxAt(6, 0.03, 4.4, -7, y + 0.27, 50, '#8f7a64'))
   parts.push(boxAt(0.2, FLOOR_H - 0.6, z1 - z0, x1 + 0.1, y + (FLOOR_H - 0.3) / 2, (z0 + z1) / 2, '#d9cdb9'))
   parts.push(boxAt(x1 - x0, FLOOR_H - 0.6, 0.2, (x0 + x1) / 2, y + (FLOOR_H - 0.3) / 2, z1 + 0.1, '#d9cdb9'))
   // Timber feature wall behind the bed, ceiling, curtains at the glass, framed art.
@@ -251,15 +309,19 @@ function suiteParts() {
 }
 
 export default function HotelBuilding() {
-  const { parts, crown, lobby, suite, chand, mats, signs } = useMemo(() => {
+  const { parts, crown, lobby, suite, chand, mats, floors, signs } = useMemo(() => {
     const parts = buildingParts()
     const mats = {
       facade: facadeMaterial(),
-      white: withNightLight(new THREE.MeshStandardMaterial({ color: '#f6f1e8', roughness: 0.6 })),
+      white: withNightLight(detailed(new THREE.MeshStandardMaterial({ color: '#f6f1e8', roughness: 0.7 }), 'white_stucco', { scale: 0.5, detail: 0.35 })),
+      fins: finMaterial(),
+      marble: withNightLight(detailed(new THREE.MeshStandardMaterial({ color: '#dccdb6', roughness: 0.18, envMapIntensity: 0.45 }), 'marble_01', { scale: 0.4, detail: 0.55 })),
+      oak: withNightLight(detailed(new THREE.MeshStandardMaterial({ color: '#b98a5e', roughness: 0.5, envMapIntensity: 0.4 }), 'wood_floor', { scale: 0.5, detail: 0.7 })),
       glass: glassMaterial(),
       core: new THREE.MeshStandardMaterial({ color: '#2a2622', roughness: 0.9 }),
-      crown: new THREE.MeshStandardMaterial({ color: '#c9a35a', metalness: 0.85, roughness: 0.3, emissive: '#ffb347', emissiveIntensity: 0 }),
-      interior: withNightLight(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 })),
+      crown: new THREE.MeshStandardMaterial({ color: '#c9a35a', metalness: 0.9, roughness: 0.22, emissive: '#ffb347', emissiveIntensity: 0 }),
+      // Interiors get little sky light (no IBL occlusion indoors); lamps carry them.
+      interior: withNightLight(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, envMapIntensity: 0.35 })),
     }
     // Core rooms glow warmly at night (curtains drawn, lights on).
     mats.core.onBeforeCompile = (shader) => {
@@ -277,15 +339,24 @@ export default function HotelBuilding() {
     lobbySign.rotation.y = Math.PI
     const rosette = new THREE.Mesh(new THREE.CircleGeometry(4.5, 48).rotateX(-Math.PI / 2), rosetteMaterial())
     rosette.position.set(0, LAND_Y + 0.11, 50)
-    return { parts, crown: crownGeometry(), lobby: lobbyParts(), suite: suiteParts(), chand: chandelier(), mats, signs: [tvMesh, lobbySign, rosette] }
+    const floors = {
+      marble: clean(new THREE.BoxGeometry(27.4, 0.1, 15.6).translate(0, LAND_Y + 0.05, 50)),
+      oak: clean(new THREE.BoxGeometry(SUITE.x1 - SUITE.x0, 0.06, SUITE.z1 - SUITE.z0).translate((SUITE.x0 + SUITE.x1) / 2, SUITE_Y + 0.23, (SUITE.z0 + SUITE.z1) / 2)),
+    }
+    return { parts, crown: crownGeometry(), lobby: lobbyParts(), suite: suiteParts(), chand: chandelier(), mats, floors, signs: [tvMesh, lobbySign, rosette] }
   }, [])
   useFrame(() => {
-    mats.crown.emissiveIntensity = 0.05 + zoneUniforms.uNight.value * 2.6
+    // Crown breathes slowly at night, like a lantern.
+    const n = zoneUniforms.uNight.value
+    mats.crown.emissiveIntensity = 0.05 + n * (2.2 + 0.6 * Math.sin(zoneUniforms.uTime.value * 0.8))
   })
   return (
     <>
       <mesh geometry={parts.facade} material={mats.facade} castShadow receiveShadow />
       <mesh geometry={parts.white} material={mats.white} castShadow receiveShadow />
+      <mesh geometry={parts.fins} material={mats.fins} castShadow />
+      <mesh geometry={floors.marble} material={mats.marble} receiveShadow />
+      <mesh geometry={floors.oak} material={mats.oak} receiveShadow />
       <mesh geometry={parts.core} material={mats.core} />
       <mesh geometry={crown} material={mats.crown} castShadow />
       <mesh geometry={lobby} material={mats.interior} receiveShadow />
@@ -296,8 +367,8 @@ export default function HotelBuilding() {
       ))}
       <mesh geometry={parts.glass} material={mats.glass} renderOrder={2} />
       {/* Interior lights: lobby chandelier and suite lamps (always on). */}
-      <pointLight position={[0, LAND_Y + 6, 50]} color="#ffd9a8" intensity={60} distance={22} decay={2} />
-      <pointLight position={[-6, SUITE_Y + 2.4, 52]} color="#ffd2a0" intensity={12} distance={12} decay={2} />
+      <pointLight position={[0, LAND_Y + 6, 50]} color="#ffd9a8" intensity={40} distance={22} decay={2} />
+      <pointLight position={[-6, SUITE_Y + 1.5, 53]} color="#ffd2a0" intensity={6} distance={12} decay={2} />
     </>
   )
 }

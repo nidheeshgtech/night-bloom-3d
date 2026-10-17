@@ -39,7 +39,9 @@ function Stars() {
 }
 
 // nightMap: builder for the painted night light texture; spots: practical night lights.
-export default function ZoneLighting({ nightMap = buildNightMap, spots = null } = {}) {
+// fill: optional daytime bounce light { sky, ground, intensity }, a cheap stand-in for global
+// illumination (sky from above, sunlit ground bouncing back up). softness: shadow blur radius.
+export default function ZoneLighting({ nightMap = buildNightMap, spots = null, fill = null, softness = 0, fogDensity = 0.0011 } = {}) {
   const scene = useThree((s) => s.scene)
   const controls = useThree((s) => s.controls)
   const gl = useThree((s) => s.gl)
@@ -58,6 +60,7 @@ export default function ZoneLighting({ nightMap = buildNightMap, spots = null } 
   const night = useRef(useGarden.getState().night)
   const lampLights = useRef([])
   const hemi = useRef()
+  const bounce = useRef()
 
   useEffect(() => {
     const map = nightMap()
@@ -75,6 +78,8 @@ export default function ZoneLighting({ nightMap = buildNightMap, spots = null } 
     return l
   }, [])
   sun.shadow.mapSize.setScalar(quality === 'high' ? 2048 : 1024)
+  sun.shadow.radius = softness
+  sun.shadow.blurSamples = 12
   shadows.dirty = true
   if (sun.shadow.map) {
     sun.shadow.map.dispose()
@@ -138,6 +143,7 @@ export default function ZoneLighting({ nightMap = buildNightMap, spots = null } 
     zoneUniforms.uNight.value = t
     nightUniforms.uNightLevel.value = t
     if (hemi.current) hemi.current.intensity = NIGHT.hemi * t
+    if (bounce.current) bounce.current.intensity = fill.intensity * (1 - t)
     zoneUniforms.uPlayer.value.copy(state.camera.position)
   })
 
@@ -145,9 +151,10 @@ export default function ZoneLighting({ nightMap = buildNightMap, spots = null } 
     <>
       <Environment map={hdri} />
       <SkyBackdrop texture={hdri} />
-      <fogExp2 attach="fog" args={['#e3cba6', 0.0011]} />
+      <fogExp2 attach="fog" args={['#e3cba6', fogDensity]} />
       <primitive object={sun} />
       <hemisphereLight ref={hemi} args={['#7c6ee0', '#1e3a58', 0]} />
+      {fill && <hemisphereLight ref={bounce} args={[fill.sky, fill.ground, fill.intensity]} />}
       <primitive object={sun.target} />
       {lightSpots.map((p, i) => (
         <pointLight key={i} ref={(l) => (lampLights.current[i] = l)} position={p} color="#ffc27a" intensity={0} distance={16} decay={2} />

@@ -9,6 +9,7 @@ import CtaNote from './CtaNote'
 import SiteMap from './SiteMap'
 import DPad from './DPad'
 import TvMode from './TvMode'
+import CineCaption from './CineCaption'
 import { CATEGORIES, POIS, SCHEDULE_TITLE, VENUE_DATA as EVENT } from '../venue'
 import { NextUp, SchedulePanel } from '../event/EventUI'
 import Icon from './Icon'
@@ -192,16 +193,12 @@ function HudMain() {
   if (mode === 'tour') {
     return (
       <div className="hud">
+        <div className="cine-bars" aria-hidden />
         <header className="brand">
           <span className="brand-mark" />
           {BRAND.name}
         </header>
-        {caption && (
-          <div className="caption" key={caption.title + caption.sub}>
-            <h2>{caption.title}</h2>
-            <p>{caption.sub}</p>
-          </div>
-        )}
+        {caption && <CineCaption caption={caption} key={caption.title + caption.sub} />}
         <div className="dock">
           <button className="btn" onClick={rig.stopTour}>
             Take control

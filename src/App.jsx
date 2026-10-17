@@ -21,6 +21,7 @@ import ZoneEffects from './zone/ZoneEffects'
 import { bloomWorld } from './world/bloomWorld'
 import { hotelWorld } from './hotel/hotelWorld'
 import HotelScene from './hotel/HotelScene'
+import HotelEffects from './hotel/HotelEffects'
 import { BRAND } from './brand'
 import { islandWorld } from './lib/islandWorld'
 import { setWorld } from './lib/world'
@@ -93,7 +94,7 @@ export default function App() {
         <NavArrows />
         <Perf />
         <Warmup />
-        {quality === 'high' && (isZone ? <ZoneEffects /> : <Effects />)}
+        {quality === 'high' && (world.id === 'hotel' ? <HotelEffects /> : isZone ? <ZoneEffects /> : <Effects />)}
       </Canvas>
       {/* Dip to black for tour cuts (driven directly by the camera rig). */}
       <div className="tour-fade" />

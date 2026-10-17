@@ -204,7 +204,12 @@ export default function CameraRig() {
         set({ audio: true })
       }
       const fade = document.querySelector('.tour-fade')
-      segs.forEach((seg) => {
+      // Mid-tour shots blend linear and eased motion, so the camera keeps flowing from one
+      // shot into the next instead of stopping dead; only the first and last shots settle.
+      const flow = (t) => 0.6 * t + 0.4 * (0.5 - 0.5 * Math.cos(Math.PI * t))
+      const t0 = performance.now()
+      const drift = new THREE.Vector3()
+      segs.forEach((seg, i) => {
         // A cut dips to black and starts the segment at its own first point (used to enter
         // interiors without flying through walls). Cut segments need two or more points.
         const cut = seg.cut && fade && seg.pos.length > 1
@@ -212,7 +217,7 @@ export default function CameraRig() {
         const pc = new THREE.CatmullRomCurve3(cut ? seg.pos : [prevPos, ...seg.pos], false, 'centripetal')
         const lc = new THREE.CatmullRomCurve3(cut ? seg.look : [prevLook, ...seg.look], false, 'centripetal')
         const st = { t: 0 }
-        tl.call(() => set({ caption: { title: seg.caption, sub: seg.sub } }))
+        tl.call(() => set({ caption: { title: seg.caption, sub: seg.sub, index: i, total: segs.length, duration: seg.duration } }))
         if (cut) {
           tl.call(() => {
             camera.position.copy(seg.pos[0])
@@ -223,10 +228,16 @@ export default function CameraRig() {
         tl.to(st, {
           t: 1,
           duration: seg.duration,
-          ease: seg.ease || 'power1.inOut',
+          ease: seg.ease || (i === 0 || i === segs.length - 1 ? 'power1.inOut' : flow),
           onUpdate: () => {
-            camera.position.copy(pc.getPointAt(st.t))
-            camera.lookAt(lc.getPointAt(st.t, look))
+            lc.getPointAt(st.t, look)
+            rig.focus.copy(look)
+            // Gentle handheld drift, scaled to the shot (a few cm indoors, metres from the air).
+            const k = (performance.now() - t0) / 1000
+            const amp = camera.position.distanceTo(look) * 0.0035
+            drift.set(Math.sin(k * 0.37) + 0.5 * Math.sin(k * 0.91 + 1.3), Math.sin(k * 0.29 + 2.1) * 0.6, Math.cos(k * 0.33) + 0.5 * Math.sin(k * 0.77 + 0.4)).multiplyScalar(amp)
+            camera.position.copy(pc.getPointAt(st.t)).add(drift)
+            camera.lookAt(look)
           },
         }, cut ? '<' : undefined)
         if (seg.night !== undefined) {

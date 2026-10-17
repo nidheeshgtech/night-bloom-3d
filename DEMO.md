@@ -68,6 +68,16 @@ kids splash zone, beach palapas, a pier to an overwater restaurant, beach villas
 and a spa. **Watch the tour** runs about 90 s from the sea, through the lobby and suite, to golden
 hour, dinner over the water and fireworks. Every place has its own booking button.
 
+### Cinematic look (hotel)
+- Physically based materials: travertine deck, teak decking, linen, thatch, stucco and marble
+  (CC0 textures), reflective solar-glass windows with bronze frames.
+- Sun with soft shadows, sky and sand bounce light, ambient occlusion, ACES filmic tone mapping,
+  restrained bloom, a light grade and vignette. Depth of field only during the guided tour.
+- Tour: letterbox bars, film-style chapter titles, flowing camera moves with a slight handheld
+  drift, fade cuts into interiors.
+- Life: yachts and a dhow cruising the bay with wakes, gulls, planting beds, and at night a slow
+  colour wash along the crescent, LED fins on the tower and a breathing gold crown.
+
 ## Hotel TV mode
 `/hotel-tv` is for a lobby screen or a smart TV browser. It plays the hotel tour on a loop with
 no controls, and a side panel shows:

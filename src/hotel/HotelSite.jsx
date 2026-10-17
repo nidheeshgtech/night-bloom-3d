@@ -8,6 +8,7 @@ import { withNightLight } from '../zone/nightlight'
 import { rippleTexture } from '../world/Lake'
 import Palms from '../zone/Palms'
 import { V, archPanel, clean, prism } from './geom'
+import { detailed, hotelMaterials } from './materials'
 import { ARRIVAL, BAR, CRESCENT, KIDS_POOL, LAND_Y, PALM_SPOTS, PIER, POOL, POOL_OUTLINE, RESTAURANT, SEA_Y, SPA, TOWER, VILLAS, arcPoint, shoreZ, terrainH } from './layout'
 
 const MASK_E = 200
@@ -24,9 +25,9 @@ function paintMask() {
   ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, RES, RES)
   ctx.filter = 'blur(2px)'
-  // Lawns: behind the hotel and around villas and spa.
+  // Lawns: a garden belt behind the hotel (desert sand beyond), around villas and spa.
   ctx.fillStyle = '#0f0'
-  ctx.fillRect(...px(-200, 20), 400 * k, 180 * k)
+  ctx.fillRect(...px(-180, 20), 360 * k, 130 * k)
   for (const v of VILLAS) {
     ctx.beginPath()
     ctx.ellipse(...px(v.x, v.z + 6), 13 * k, 12 * k, 0, 0, Math.PI * 2)
@@ -72,13 +73,13 @@ function Ground() {
   const material = useMemo(() => {
     const sand = pbrSet('aerial_beach_01', 1)
     const grass = pbrSet('grass_ground', 1)
-    const stone = pbrSet('white_sandstone_bricks', 1)
-    const m = new THREE.MeshStandardMaterial({ map: sand.map, normalMap: sand.normalMap, normalScale: new THREE.Vector2(0.35, 0.35), roughness: 1 })
+    const stone = pbrSet('marble_01', 1)
+    const m = new THREE.MeshStandardMaterial({ map: sand.map, normalMap: sand.normalMap, normalScale: new THREE.Vector2(1, 1), roughness: 1 })
     m.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, { uMask: { value: paintMask() }, uGrass: { value: grass.map }, uStone: { value: stone.map } })
+      Object.assign(shader.uniforms, { uMask: { value: paintMask() }, uGrass: { value: grass.map }, uStone: { value: stone.map }, uStoneN: { value: stone.normalMap }, uStoneArm: { value: stone.arm } })
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vW;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvW = (modelMatrix * vec4(transformed, 1.0)).xyz;')
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\nvarying vec3 vW;\nuniform sampler2D uMask;\nuniform sampler2D uGrass;\nuniform sampler2D uStone;\n${SHORE_GLSL}`)
+        .replace('#include <common>', `#include <common>\nvarying vec3 vW;\nuniform sampler2D uMask;\nuniform sampler2D uGrass;\nuniform sampler2D uStone;\nuniform sampler2D uStoneN;\nuniform sampler2D uStoneArm;\n${SHORE_GLSL}`)
         .replace(
           '#include <map_fragment>',
           `vec2 muv = vec2((vW.x + ${MASK_E.toFixed(1)}) / ${(2 * MASK_E).toFixed(1)}, 1.0 - (vW.z + ${MASK_E.toFixed(1)}) / ${(2 * MASK_E).toFixed(1)});
@@ -88,15 +89,44 @@ function Ground() {
           float wet = 1.0 - smoothstep(0.0, 6.0, vW.z - shoreZ(vW.x));
           sandC *= 1.0 - 0.35 * wet;
           vec3 grassC = texture2D(uGrass, vW.xz / 3.0).rgb * vec3(0.55, 1.05, 0.34) * 1.15;
-          vec3 stoneC = texture2D(uStone, vW.xz / 2.2).rgb * vec3(1.45, 1.38, 1.26);
+          // Travertine-style pavers: large pale tiles (about 1.2 m), satin finish.
+          vec2 stUv = vec2(vW.x, -vW.z) / 2.4;
+          vec3 stoneC = texture2D(uStone, stUv).rgb * vec3(1.62, 1.72, 2.05);
           vec3 col = mix(sandC, grassC, mk.g * (1.0 - mk.r));
           col = mix(col, stoneC, mk.r);
           diffuseColor.rgb *= col;`,
         )
+        .replace(
+          '#include <roughnessmap_fragment>',
+          `float roughnessFactor = mix(mix(1.0, 0.85, mk.g), 0.42 + 0.35 * texture2D(uStoneArm, stUv).g, mk.r);
+          // Wet sand at the waterline is smoother and catches the sky.
+          roughnessFactor = mix(roughnessFactor, 0.5, wet * 0.8 * (1.0 - mk.r));`,
+        )
+        .replace(
+          '#include <normal_fragment_maps>',
+          `vec3 nSand = texture2D(normalMap, vec2(vW.x, -vW.z) / 7.0).xyz * 2.0 - 1.0;
+          vec3 nStone = texture2D(uStoneN, stUv).xyz * 2.0 - 1.0;
+          vec3 mapN = mix(vec3(nSand.xy * 0.35 * (1.0 - wet), nSand.z), vec3(nStone.xy * 0.9, nStone.z), mk.r);
+          normal = normalize(tbn * mapN);`,
+        )
     }
     return withNightLight(m)
   }, [])
-  return <mesh geometry={geometry} material={material} receiveShadow />
+  // Inland apron so the distant skyline stands on ground, not past the edge of the world.
+  return (
+    <>
+      <mesh geometry={geometry} material={material} receiveShadow />
+      {[
+        [0, 1210, 3200, 1520],
+        [1025, 240, 1150, 420],
+        [-1025, 240, 1150, 420],
+      ].map(([x, z, w, d]) => (
+        <mesh key={x + ':' + z} material={material} position={[x, LAND_Y, z]} rotation-x={-Math.PI / 2}>
+          <planeGeometry args={[w, d]} />
+        </mesh>
+      ))}
+    </>
+  )
 }
 
 // Arabian Gulf: turquoise shallows to deep blue, two ripple layers, foam at the waterline.
@@ -104,7 +134,7 @@ function Sea() {
   const { mat, tex } = useMemo(() => {
     const tex = rippleTexture()
     tex.repeat.set(160, 160)
-    const mat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.08, metalness: 0.1, normalMap: tex, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.2, transparent: true })
+    const mat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.09, metalness: 0, normalMap: tex, normalScale: new THREE.Vector2(0.45, 0.45), envMapIntensity: 1.5, transparent: true })
     mat.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = zoneUniforms.uTime
       shader.uniforms.uNight = zoneUniforms.uNight
@@ -115,22 +145,27 @@ function Sea() {
           '#include <normal_fragment_maps>',
           `vec3 n1 = texture2D(normalMap, vNormalMapUv).xyz * 2.0 - 1.0;
           vec3 n2 = texture2D(normalMap, vNormalMapUv * 0.31 + vec2(uTime * 0.004, -uTime * 0.006)).xyz * 2.0 - 1.0;
-          normal = normalize(tbn * normalize(vec3((n1.xy + n2.xy) * normalScale, n1.z * n2.z)));`,
+          vec3 n3 = texture2D(normalMap, vNormalMapUv * 0.067 + vec2(-uTime * 0.0015, uTime * 0.001)).xyz * 2.0 - 1.0;
+          // Ripples fade with distance (no shimmer far out); big swells stay.
+          float seaFar = smoothstep(60.0, 600.0, length(vViewPosition));
+          vec2 sw = (n1.xy * (1.0 - seaFar) + n2.xy * (1.0 - 0.6 * seaFar) + n3.xy * 0.8) * normalScale;
+          normal = normalize(tbn * normalize(vec3(sw, 1.0)));`,
         )
         .replace(
           '#include <color_fragment>',
           `#include <color_fragment>
           float dist = shoreZ(vW.x) - vW.z;
-          vec3 shallow = vec3(0.18, 0.78, 0.76);
-          vec3 mid = vec3(0.04, 0.42, 0.55);
-          vec3 deep = vec3(0.02, 0.16, 0.32);
+          // Body colour only; the sky reflection (env map, fresnel) carries the rest.
+          vec3 shallow = vec3(0.16, 0.68, 0.64);
+          vec3 mid = vec3(0.02, 0.3, 0.4);
+          vec3 deep = vec3(0.008, 0.08, 0.16);
           vec3 c = mix(shallow, mid, smoothstep(2.0, 30.0, dist));
           c = mix(c, deep, smoothstep(30.0, 160.0, dist));
           // Foam: a band at the waterline plus incoming wave lines.
           float wave = smoothstep(0.75, 1.0, sin(dist * 0.9 - uTime * 1.6)) * (1.0 - smoothstep(2.0, 14.0, dist));
           float foam = (1.0 - smoothstep(0.0, 2.2, dist)) * 0.9 + wave * 0.55;
           c = mix(c, vec3(0.95), clamp(foam, 0.0, 1.0));
-          diffuseColor.rgb = c * mix(1.0, 0.35, uNight);
+          diffuseColor.rgb = c * mix(1.0, 0.45, uNight);
           diffuseColor.a = smoothstep(-1.0, 0.6, dist) * 0.97;`,
         )
     }
@@ -146,11 +181,14 @@ function Sea() {
   )
 }
 
-function poolWaterMaterial() {
+// Pool water: shallow edges to a deeper middle, mosaic tile grid seen through the water,
+// moving caustics. basin = [cx, cz, rx, rz] of the main pool (others read as uniform depth).
+function poolWaterMaterial(basin = [POOL.cx, POOL.cz, POOL.rx, POOL.rz]) {
   const tex = rippleTexture()
   tex.repeat.set(0.3, 0.3)
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-  const m = new THREE.MeshStandardMaterial({ color: '#4fd4ec', emissive: '#30c8f0', emissiveIntensity: 0.12, roughness: 0.04, metalness: 0.05, normalMap: tex, normalScale: new THREE.Vector2(0.2, 0.2), envMapIntensity: 1.2 })
+  const m = new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#30c8f0', emissiveIntensity: 0, roughness: 0.03, metalness: 0, normalMap: tex, normalScale: new THREE.Vector2(0.25, 0.25), envMapIntensity: 1.0 })
+  m.customProgramCacheKey = () => 'pool:' + basin.join(',')
   m.userData.tex = tex
   // Moving caustic light on the pool floor, so the water reads as clear and shallow.
   m.onBeforeCompile = (shader) => {
@@ -180,7 +218,14 @@ function poolWaterMaterial() {
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
-        diffuseColor.rgb += vec3(0.55, 0.95, 1.0) * caustic(vCW / 5.0, uTime * 0.35) * 0.45;`,
+        vec2 bq = (vCW - vec2(${basin[0].toFixed(2)}, ${basin[1].toFixed(2)})) / vec2(${basin[2].toFixed(2)}, ${basin[3].toFixed(2)});
+        float depth = 1.0 - smoothstep(0.35, 1.05, length(bq));
+        vec3 water = mix(vec3(0.14, 0.6, 0.68), vec3(0.015, 0.26, 0.46), depth);
+        vec2 tg = abs(fract(vCW / 0.6) - 0.5);
+        float grout = 1.0 - smoothstep(0.0, 0.04, min(tg.x, tg.y));
+        water *= 1.0 - grout * 0.12 * (1.0 - depth * 0.6);
+        water += vec3(0.5, 0.9, 1.0) * caustic(vCW / 5.0, uTime * 0.35) * mix(0.32, 0.16, depth);
+        diffuseColor.rgb = water;`,
       )
   }
   return m
@@ -205,33 +250,45 @@ function Pools() {
     const ring = Array.from({ length: 32 }, (_, i) => [KIDS_POOL.x + Math.cos((i / 32) * Math.PI * 2) * KIDS_POOL.r, KIDS_POOL.z + Math.sin((i / 32) * Math.PI * 2) * KIDS_POOL.r])
     return { geo, mat: poolWaterMaterial(), coping: mergeGeometries([tube(POOL_OUTLINE), tube(ring)]) }
   }, [])
+  const copingMat = useMemo(() => withNightLight(detailed(new THREE.MeshStandardMaterial({ color: '#f4efe6', roughness: 0.55 }), 'marble_01', { scale: 0.5, detail: 0.4 })), [])
   useFrame((_, dt) => {
     mat.userData.tex.offset.x += dt * 0.03
-    mat.emissiveIntensity = 0.12 + zoneUniforms.uNight.value * 1.1
+    mat.emissiveIntensity = zoneUniforms.uNight.value * 1.1
   })
   return (
     <>
       <mesh geometry={geo} material={mat} receiveShadow />
-      <mesh geometry={coping} receiveShadow>
-        <meshStandardMaterial color="#f4efe6" roughness={0.7} />
-      </mesh>
+      <mesh geometry={coping} material={copingMat} receiveShadow />
     </>
   )
 }
 
 const place = (x, y, z, yaw = 0) => new THREE.Matrix4().compose(V(x, y, z), new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), yaw), V(1, 1, 1))
 
-// Everything static and vertex-coloured, merged into one draw.
+// Everything static and vertex-coloured, merged into one draw per surface type
+// (paint, wood, fabric, thatch, stone), each with its own physical material.
 function siteGeometry() {
-  const P = []
-  const add = (g, color) => P.push(clean(g, color))
-  const lounger = (m, color = '#ffffff') => {
-    add(new THREE.BoxGeometry(0.75, 0.22, 1.9).translate(0, 0.32, 0).applyMatrix4(m), color)
-    add(new THREE.BoxGeometry(0.75, 0.08, 0.7).rotateX(-0.6).translate(0, 0.6, -0.78).applyMatrix4(m), color)
+  const K = { paint: [], wood: [], fabric: [], thatch: [], stone: [] }
+  const P = K.paint
+  const add = (g, color, kind = 'paint') => K[kind].push(clean(g, color))
+  const lounger = (m, color = '#f7f3ea') => {
+    // Teak frame with legs, a thick linen cushion and a raised back.
+    add(new THREE.BoxGeometry(0.72, 0.1, 1.95).translate(0, 0.22, 0).applyMatrix4(m), '#8a5a36', 'wood')
+    for (const a of [-1, 1]) for (const b of [-1, 1]) add(new THREE.BoxGeometry(0.06, 0.2, 0.06).translate(a * 0.3, 0.1, b * 0.85).applyMatrix4(m), '#6b4428', 'wood')
+    add(new THREE.BoxGeometry(0.68, 0.12, 1.25).translate(0, 0.33, 0.3).applyMatrix4(m), color, 'fabric')
+    add(new THREE.BoxGeometry(0.68, 0.1, 0.72).rotateX(-0.55).translate(0, 0.52, -0.62).applyMatrix4(m), color, 'fabric')
   }
   const umbrella = (m, color, straw = false) => {
-    add(new THREE.CylinderGeometry(0.05, 0.05, 2.5, 6).translate(0, 1.25, 0).applyMatrix4(m), straw ? '#8a6a44' : '#ddd')
-    add(new THREE.ConeGeometry(straw ? 1.8 : 1.6, straw ? 0.9 : 0.5, straw ? 12 : 10).translate(0, 2.6, 0).applyMatrix4(m), color)
+    add(new THREE.CylinderGeometry(0.05, 0.06, 2.5, 8).translate(0, 1.25, 0).applyMatrix4(m), straw ? '#7a5634' : '#c9b593', 'wood')
+    if (straw) {
+      add(new THREE.ConeGeometry(1.8, 0.95, 16, 2).translate(0, 2.62, 0).applyMatrix4(m), '#c2a06a', 'thatch')
+      add(new THREE.CylinderGeometry(1.82, 1.86, 0.18, 16, 1, true).translate(0, 2.08, 0).applyMatrix4(m), '#a88a58', 'thatch')
+    } else {
+      // Eight-rib canopy with a scalloped valance.
+      add(new THREE.ConeGeometry(1.6, 0.45, 8, 1, true).translate(0, 2.62, 0).applyMatrix4(m), color, 'fabric')
+      add(new THREE.CylinderGeometry(1.6, 1.6, 0.2, 8, 1, true).translate(0, 2.3, 0).applyMatrix4(m), color, 'fabric')
+      add(new THREE.SphereGeometry(0.07, 8, 6).translate(0, 2.88, 0).applyMatrix4(m), '#c9a35a')
+    }
   }
   // --- Pool deck: loungers + umbrellas around the lagoon (sea side and wing sides).
   for (let i = 0; i < 22; i++) {
@@ -255,19 +312,26 @@ function siteGeometry() {
     for (let j = 0; j < 2; j++) {
       const cx = side * 44
       const cz = 18 + j * 9
-      for (const a of [-1, 1]) for (const b of [-1, 1]) add(new THREE.BoxGeometry(0.12, 2.6, 0.12).translate(cx + a * 1.5, LAND_Y + 1.3, cz + b * 1.5), '#c9b593')
-      add(new THREE.BoxGeometry(3.5, 0.15, 3.5).translate(cx, LAND_Y + 2.65, cz), '#f4efe6')
-      add(new THREE.BoxGeometry(2.6, 0.45, 2.6).translate(cx, LAND_Y + 0.3, cz), '#ffffff')
+      for (const a of [-1, 1]) for (const b of [-1, 1]) add(new THREE.BoxGeometry(0.12, 2.6, 0.12).translate(cx + a * 1.5, LAND_Y + 1.3, cz + b * 1.5), '#8a5a36', 'wood')
+      add(new THREE.BoxGeometry(3.5, 0.15, 3.5).translate(cx, LAND_Y + 2.65, cz), '#f4efe6', 'fabric')
+      // Drapes tied back at the four corners.
+      for (const a of [-1, 1]) for (const b of [-1, 1]) add(new THREE.CylinderGeometry(0.14, 0.32, 2.4, 8).translate(cx + a * 1.62, LAND_Y + 1.35, cz + b * 1.62), '#fbf8f2', 'fabric')
+      add(new THREE.BoxGeometry(2.7, 0.3, 2.7).translate(cx, LAND_Y + 0.2, cz), '#8a5a36', 'wood')
+      add(new THREE.BoxGeometry(2.6, 0.25, 2.6).translate(cx, LAND_Y + 0.47, cz), '#ffffff', 'fabric')
+      for (const o of [-0.8, 0, 0.8]) add(new THREE.BoxGeometry(0.6, 0.35, 0.18).translate(cx + o, LAND_Y + 0.75, cz + 1.1), o ? '#e0b25a' : '#2f6f7a', 'fabric')
     }
   }
   // Swim-up bar island: stone ring, bar counter, timber canopy, stools in the water.
-  add(new THREE.CylinderGeometry(BAR.r, BAR.r + 0.2, 0.6, 32).translate(BAR.x, LAND_Y - 0.1, BAR.z), '#e6dccb')
-  add(new THREE.TorusGeometry(BAR.r - 0.6, 0.35, 8, 32).rotateX(Math.PI / 2).translate(BAR.x, LAND_Y + 1.0, BAR.z), '#7a5a3c')
-  add(new THREE.CylinderGeometry(0.2, 0.2, 3.2, 8).translate(BAR.x, LAND_Y + 1.6, BAR.z), '#7a5a3c')
-  add(new THREE.ConeGeometry(BAR.r + 1.2, 1.4, 16).translate(BAR.x, LAND_Y + 3.6, BAR.z), '#c9a86b')
+  add(new THREE.CylinderGeometry(BAR.r, BAR.r + 0.2, 0.6, 48).translate(BAR.x, LAND_Y - 0.1, BAR.z), '#efe6d6', 'stone')
+  add(new THREE.TorusGeometry(BAR.r - 0.6, 0.35, 10, 48).rotateX(Math.PI / 2).translate(BAR.x, LAND_Y + 1.0, BAR.z), '#7a5a3c', 'wood')
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2
+    add(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8).translate(BAR.x + Math.cos(a) * 1.4, LAND_Y + 1.6, BAR.z + Math.sin(a) * 1.4), '#7a5a3c', 'wood')
+  }
+  add(new THREE.ConeGeometry(BAR.r + 1.2, 1.4, 24, 2).translate(BAR.x, LAND_Y + 3.6, BAR.z), '#c2a06a', 'thatch')
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2
-    add(new THREE.CylinderGeometry(0.22, 0.22, 0.7, 10).translate(BAR.x + Math.cos(a) * (BAR.r + 0.8), LAND_Y - 0.1, BAR.z + Math.sin(a) * (BAR.r + 0.8)), '#e6dccb')
+    add(new THREE.CylinderGeometry(0.22, 0.22, 0.7, 12).translate(BAR.x + Math.cos(a) * (BAR.r + 0.8), LAND_Y - 0.1, BAR.z + Math.sin(a) * (BAR.r + 0.8)), '#efe6d6', 'stone')
   }
   // Kids splash zone: slide, mushroom fountain, coloured shade sails.
   const kx = KIDS_POOL.x
@@ -292,25 +356,25 @@ function siteGeometry() {
   }
   // --- Pier: deck, posts, rope-light posts.
   const len = PIER.z0 - PIER.z1
-  add(new THREE.BoxGeometry(PIER.half * 2, 0.25, len).translate(PIER.x, PIER.y - 0.12, (PIER.z0 + PIER.z1) / 2), '#9a6a44')
+  add(new THREE.BoxGeometry(PIER.half * 2, 0.25, len).translate(PIER.x, PIER.y - 0.12, (PIER.z0 + PIER.z1) / 2), '#b8875c', 'wood')
   for (let z = PIER.z1; z <= PIER.z0; z += 6) {
     for (const s of [-1, 1]) {
-      add(new THREE.CylinderGeometry(0.16, 0.16, 4, 6).translate(PIER.x + s * (PIER.half - 0.15), PIER.y - 1.6, z), '#6b4a30')
-      add(new THREE.BoxGeometry(0.1, 0.9, 0.1).translate(PIER.x + s * (PIER.half - 0.1), PIER.y + 0.45, z), '#6b4a30')
+      add(new THREE.CylinderGeometry(0.16, 0.18, 4, 10).translate(PIER.x + s * (PIER.half - 0.15), PIER.y - 1.6, z), '#5a3e28', 'wood')
+      add(new THREE.BoxGeometry(0.1, 0.9, 0.1).translate(PIER.x + s * (PIER.half - 0.1), PIER.y + 0.45, z), '#6b4a30', 'wood')
     }
   }
-  for (const s of [-1, 1]) add(new THREE.BoxGeometry(0.06, 0.06, len).translate(PIER.x + s * (PIER.half - 0.1), PIER.y + 0.9, (PIER.z0 + PIER.z1) / 2), '#6b4a30')
+  for (const s of [-1, 1]) add(new THREE.BoxGeometry(0.08, 0.08, len).translate(PIER.x + s * (PIER.half - 0.1), PIER.y + 0.9, (PIER.z0 + PIER.z1) / 2), '#6b4a30', 'wood')
   // --- Overwater restaurant: round deck, posts, columns, teak roof, tables.
   const R = RESTAURANT
-  add(new THREE.CylinderGeometry(R.r, R.r, 0.3, 48).translate(R.x, PIER.y - 0.15, R.z), '#9a6a44')
+  add(new THREE.CylinderGeometry(R.r, R.r, 0.3, 64).translate(R.x, PIER.y - 0.15, R.z), '#b8875c', 'wood')
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2
     if (i === 3) continue // keep the pier entrance clear
-    add(new THREE.CylinderGeometry(0.22, 0.22, 4, 8).translate(R.x + Math.cos(a) * (R.r - 0.8), PIER.y - 1.8, R.z + Math.sin(a) * (R.r - 0.8)), '#6b4a30')
+    add(new THREE.CylinderGeometry(0.22, 0.24, 4, 10).translate(R.x + Math.cos(a) * (R.r - 0.8), PIER.y - 1.8, R.z + Math.sin(a) * (R.r - 0.8)), '#5a3e28', 'wood')
     add(new THREE.CylinderGeometry(0.16, 0.16, 3.4, 8).translate(R.x + Math.cos(a) * (R.r - 1.4), PIER.y + 1.7, R.z + Math.sin(a) * (R.r - 1.4)), '#f4efe6')
   }
-  add(new THREE.ConeGeometry(R.r + 1.2, 3.2, 24).translate(R.x, PIER.y + 5.0, R.z), '#a77b4e')
-  add(new THREE.CylinderGeometry(R.r + 1.2, R.r + 1.2, 0.3, 24).translate(R.x, PIER.y + 3.4, R.z), '#6b4a30')
+  add(new THREE.ConeGeometry(R.r + 1.2, 3.2, 48, 3).translate(R.x, PIER.y + 5.0, R.z), '#c2a06a', 'thatch')
+  add(new THREE.CylinderGeometry(R.r + 1.2, R.r + 1.2, 0.3, 48).translate(R.x, PIER.y + 3.4, R.z), '#6b4a30', 'wood')
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2 + 0.3
     const r = i % 2 ? 8.5 : 5
@@ -318,14 +382,14 @@ function siteGeometry() {
     const z = R.z + Math.sin(a) * r
     add(new THREE.CylinderGeometry(0.6, 0.6, 0.06, 16).translate(x, PIER.y + 0.78, z), '#f4efe6')
     add(new THREE.CylinderGeometry(0.05, 0.05, 0.75, 6).translate(x, PIER.y + 0.38, z), '#333')
-    for (let c = 0; c < 2; c++) add(new THREE.BoxGeometry(0.45, 0.45, 0.45).translate(x + (c ? 0.9 : -0.9), PIER.y + 0.23, z), '#e9dcc8')
+    for (let c = 0; c < 2; c++) add(new THREE.BoxGeometry(0.45, 0.45, 0.45).translate(x + (c ? 0.9 : -0.9), PIER.y + 0.23, z), '#e9dcc8', 'fabric')
   }
   // --- Beach villas: white boxes, timber screens, deck and plunge pool on the sea side.
   for (const v of VILLAS) {
     P.push(prism([[v.x - 5.5, v.z - 2], [v.x + 5.5, v.z - 2], [v.x + 5.5, v.z + 7], [v.x - 5.5, v.z + 7]], LAND_Y, LAND_Y + 3.6, { color: '#f6f1e8' }))
     add(new THREE.BoxGeometry(12.6, 0.3, 10.4).translate(v.x, LAND_Y + 3.75, v.z + 2.5), '#ece3d4')
-    for (let k = 0; k < 13; k++) add(new THREE.BoxGeometry(0.08, 3, 0.08).translate(v.x - 4.2 + k * 0.7, LAND_Y + 1.7, v.z - 2.2), '#8a5a36')
-    add(new THREE.BoxGeometry(11, 0.2, 6).translate(v.x, LAND_Y + 0.1, v.z - 5.2), '#9a6a44')
+    for (let k = 0; k < 13; k++) add(new THREE.BoxGeometry(0.08, 3, 0.08).translate(v.x - 4.2 + k * 0.7, LAND_Y + 1.7, v.z - 2.2), '#8a5a36', 'wood')
+    add(new THREE.BoxGeometry(11, 0.2, 6).translate(v.x, LAND_Y + 0.1, v.z - 5.2), '#b8875c', 'wood')
     lounger(place(v.x + 3, LAND_Y + 0.2, v.z - 5, Math.PI))
     lounger(place(v.x + 4.2, LAND_Y + 0.2, v.z - 5, Math.PI))
   }
@@ -341,16 +405,16 @@ function siteGeometry() {
   for (const x of [-7, 7]) for (const z of [TOWER.z1 + 2, TOWER.z1 + 12]) add(new THREE.CylinderGeometry(0.45, 0.45, 5, 16).translate(x, LAND_Y + 2.5, z), '#f6f1e8')
   add(new THREE.BoxGeometry(17, 0.6, 13).translate(0, LAND_Y + 5.3, TOWER.z1 + 7), '#f6f1e8')
   add(new THREE.BoxGeometry(17.2, 0.15, 13.2).translate(0, LAND_Y + 5.68, TOWER.z1 + 7), '#c9a35a')
-  add(new THREE.CylinderGeometry(4.5, 4.8, 0.7, 32).translate(ARRIVAL.x, LAND_Y + 0.35, ARRIVAL.z + 6), '#e6dccb')
-  add(new THREE.CylinderGeometry(0.4, 0.6, 2.2, 12).translate(ARRIVAL.x, LAND_Y + 1.4, ARRIVAL.z + 6), '#e6dccb')
-  add(new THREE.CylinderGeometry(1.8, 0.8, 0.4, 20).translate(ARRIVAL.x, LAND_Y + 2.6, ARRIVAL.z + 6), '#e6dccb')
-  return mergeGeometries(P)
+  add(new THREE.CylinderGeometry(4.5, 4.8, 0.7, 48).translate(ARRIVAL.x, LAND_Y + 0.35, ARRIVAL.z + 6), '#efe6d6', 'stone')
+  add(new THREE.CylinderGeometry(0.4, 0.6, 2.2, 16).translate(ARRIVAL.x, LAND_Y + 1.4, ARRIVAL.z + 6), '#efe6d6', 'stone')
+  add(new THREE.CylinderGeometry(1.8, 0.8, 0.4, 32).translate(ARRIVAL.x, LAND_Y + 2.6, ARRIVAL.z + 6), '#efe6d6', 'stone')
+  return Object.fromEntries(Object.entries(K).map(([k, list]) => [k, mergeGeometries(list)]))
 }
 
 function WaterSurfaces() {
-  const mat = useMemo(poolWaterMaterial, [])
+  const mat = useMemo(() => poolWaterMaterial([0, 0, 1e4, 1e4]), [])
   useFrame(() => {
-    mat.emissiveIntensity = 0.12 + zoneUniforms.uNight.value * 1.1
+    mat.emissiveIntensity = zoneUniforms.uNight.value * 1.1
   })
   const list = useMemo(
     () => [
@@ -379,7 +443,7 @@ function Lights() {
       const z = shoreZ(x) + 18.2
       pts.push(V(x, terrainH(x, z) + 0.15, z))
     }
-    const m = new THREE.InstancedMesh(new THREE.SphereGeometry(0.08, 8, 6), bulbMat, pts.length)
+    const m = new THREE.InstancedMesh(new THREE.SphereGeometry(0.05, 8, 6), bulbMat, pts.length)
     pts.forEach((p, i) => m.setMatrixAt(i, new THREE.Matrix4().makeTranslation(p.x, p.y, p.z)))
     m.computeBoundingSphere()
     return m
@@ -389,14 +453,16 @@ function Lights() {
 
 export default function HotelSite() {
   const site = useMemo(siteGeometry, [])
-  const mat = useMemo(() => withNightLight(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, side: THREE.DoubleSide })), [])
+  const mats = useMemo(hotelMaterials, [])
   return (
     <>
       <Ground />
       <Sea />
       <Pools />
       <WaterSurfaces />
-      <mesh geometry={site} material={mat} castShadow receiveShadow />
+      {Object.keys(site).map((k) => (
+        <mesh key={k} geometry={site[k]} material={mats[k]} castShadow receiveShadow />
+      ))}
       <Lights />
       <Palms items={PALM_SPOTS} />
     </>

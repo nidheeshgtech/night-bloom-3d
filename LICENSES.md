@@ -14,6 +14,12 @@ existing garden or attraction. All sculptures, layouts and installations are ori
 | `public/assets/textures/farm_soil/*` (1k) | [Poly Haven](https://polyhaven.com/a/farm_soil) | Poly Haven | CC0 1.0 | Bed soil. |
 | `public/assets/textures/mossy_rock/*` (1k) | [Poly Haven](https://polyhaven.com/a/mossy_rock) | Rob Tuytel | CC0 1.0 | Stream and grotto boulders (Wingsong Conservatory). |
 | `public/assets/textures/white_sandstone_bricks/*` (1k) | [Poly Haven](https://polyhaven.com/a/white_sandstone_bricks) | Poly Haven | CC0 1.0 | Path kerb stones. |
+| `public/assets/textures/marble_01/*` (1k) | [Poly Haven](https://polyhaven.com/a/marble_01) | Poly Haven | CC0 1.0 | Hotel pool deck pavers, lobby floor, stone details. |
+| `public/assets/textures/white_stucco/*` (1k) | [Poly Haven](https://polyhaven.com/a/white_stucco) | Poly Haven | CC0 1.0 | Hotel facade and painted surfaces (detail only). |
+| `public/assets/textures/wood_floor_deck/*` (1k) | [Poly Haven](https://polyhaven.com/a/wood_floor_deck) | Poly Haven | CC0 1.0 | Pier, restaurant and villa decking, lounger frames. |
+| `public/assets/textures/rough_linen/*` (512) | [Poly Haven](https://polyhaven.com/a/rough_linen) | Poly Haven | CC0 1.0 | Cushions, canopies and sails (weave detail, recoloured). |
+| `public/assets/textures/thatch_roof_angled/*` (1k) | [Poly Haven](https://polyhaven.com/a/thatch_roof_angled) | Poly Haven | CC0 1.0 | Beach palapas, bar and restaurant roofs. |
+| `public/assets/textures/wood_floor/*` (1k) | [Poly Haven](https://polyhaven.com/a/wood_floor) | Poly Haven | CC0 1.0 | Suite floor. |
 
 ## Code libraries
 
@@ -41,6 +47,7 @@ for traceability. Check the asset pages again before publishing in case anything
 - Beach hotel (crescent wings, tower, crown, lobby, suite, lagoon pool, pier, overwater
   restaurant, villas, spa) and the fictional 'Saffron Shores Resort' name: original designs generated
   in code, not modelled on any real hotel. Room TV and lobby signs are drawn on a canvas.
+- Hotel boats (motor yachts, dhow), gulls, wakes and night facade lighting: generated in code.
 - Festival venue (stages, food trucks, booths, signage) and the fictional 'Sandglow Festival'
   name: generated in code; sponsor names are placeholders.
 - Skyline: generic procedural towers, deliberately not modelled on any real building.

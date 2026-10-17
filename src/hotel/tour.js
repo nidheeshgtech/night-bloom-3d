@@ -11,7 +11,7 @@ export function buildHotelTour() {
   return [
     { caption: BRAND.name, sub: 'A beachfront resort on the Arabian Gulf', pos: [V(-120, 70, -260), V(-60, 45, -150)], look: [V(0, 10, 20), V(0, 12, 20)], duration: 8, night: 0 },
     { caption: 'Private beach', sub: 'Palapas, loungers and calm turquoise water', pos: [V(-40, 14, -75), V(-12, 3.2, shoreZ(-12) + 4)], look: [V(10, 1, shoreZ(10) + 10), V(20, 1.5, shoreZ(20) + 12)], duration: 8 },
-    { caption: 'The pier', sub: 'A boardwalk out to the overwater restaurant', pos: [V(PIER.x - 4, PIER.y + 2.4, -30), V(PIER.x, PIER.y + 2, -80)], look: [V(PIER.x, 2, -80), V(RESTAURANT.x, 3, RESTAURANT.z)], duration: 8, ease: 'power1.inOut' },
+    { caption: 'The pier', sub: 'A boardwalk out to the overwater restaurant', pos: [V(PIER.x - 4, PIER.y + 2.4, -30), V(PIER.x, PIER.y + 2, -80)], look: [V(PIER.x, 2, -80), V(RESTAURANT.x, 3, RESTAURANT.z)], duration: 8 },
     { caption: 'Lagoon pool', sub: 'A 42 m lagoon with a swim-up bar', pos: [V(PIER.x - 10, 22, -40), V(-18, 7, -2), V(-10, 3, 6)], look: [V(BAR.x, 1, BAR.z), V(BAR.x, 1, BAR.z), V(BAR.x, 1.5, BAR.z)], duration: 10 },
     { caption: 'Grand lobby', sub: 'Double height, under a crystal chandelier', pos: [V(0, 4, 26), V(0, 2.6, 38), V(0, 2.3, 44)], look: [V(0, 4, 50), V(0, 3.8, 53), V(0, 3.4, 57)], duration: 8 },
     { caption: 'Signature Suite', sub: 'Floor 8 · bed facing the sea', cut: true, pos: [V(-2.2, SUITE_Y + 1.7, 44.2), V(-4.5, SUITE_Y + 1.65, 46), V(-10.8, SUITE_Y + 1.6, 46.5)], look: [V(-6, SUITE_Y + 0.9, 55), V(-7, SUITE_Y + 0.9, 55), V(-6.5, SUITE_Y + 0.9, 53)], duration: 9 },

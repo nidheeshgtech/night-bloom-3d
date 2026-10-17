@@ -4,6 +4,7 @@ import { useGarden } from '../lib/store'
 import { rig } from '../lib/player'
 import { BRAND } from '../brand'
 import { VENUE_DATA } from '../venue'
+import CineCaption from './CineCaption'
 
 const toMin = (t) => {
   const [h, m] = t.split(':').map(Number)
@@ -55,12 +56,7 @@ export default function TvMode() {
   return (
     <div className="tv">
       {!ready && <div className="tv-loading">{BRAND.name}</div>}
-      {caption && (
-        <div className="tv-caption" key={caption.title + caption.sub}>
-          <h2>{caption.title}</h2>
-          <p>{caption.sub}</p>
-        </div>
-      )}
+      {caption && <CineCaption caption={caption} variant="tv" key={caption.title + caption.sub} />}
       <aside className="tv-panel">
         <div className="tv-brand">
           <span className="brand-mark" />

@@ -9,6 +9,8 @@ export const input = { move: 0, turn: 0 }
 
 // Camera actions, filled in by CameraRig and called from the HUD and picking.
 export const rig = {
+  // World point the guided-tour camera is looking at (depth-of-field focus).
+  focus: new THREE.Vector3(),
   enter() {},
   toAerial() {},
   inspect() {},

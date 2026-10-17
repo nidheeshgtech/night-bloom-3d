@@ -104,3 +104,44 @@ export const woodMat = new THREE.MeshStandardMaterial({ color: '#8a5a36', roughn
 export const concreteMat = new THREE.MeshStandardMaterial({ color: '#7d776d', roughness: 0.95 })
 // Lamp glass and arch string lights; emissive intensity follows time of day.
 export const bulbMat = new THREE.MeshStandardMaterial({ color: '#cfc6b4', emissive: '#ffc780', emissiveIntensity: 0, roughness: 0.3 })
+
+// Fanous (traditional lantern) panels: brass lattice pierced with 8-point stars.
+function starLattice() {
+  const c = document.createElement('canvas')
+  c.width = c.height = 128
+  const ctx = c.getContext('2d')
+  ctx.fillStyle = '#3a2810'
+  ctx.fillRect(0, 0, 128, 128)
+  ctx.fillStyle = '#ffe2b0'
+  const star = (x, y, r) => {
+    ctx.beginPath()
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2 + Math.PI / 8
+      const rr = i % 2 ? r * 0.62 : r
+      ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr)
+    }
+    ctx.closePath()
+    ctx.fill()
+  }
+  for (const [x, y] of [[32, 32], [96, 32], [32, 96], [96, 96]]) star(x, y, 22)
+  for (const [x, y] of [[0, 0], [128, 0], [0, 128], [128, 128], [64, 64], [64, 0], [0, 64], [128, 64], [64, 128]]) {
+    ctx.beginPath()
+    ctx.arc(x, y, 5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.wrapS = t.wrapT = THREE.RepeatWrapping
+  return t
+}
+const lattice = starLattice()
+export const brassMat = new THREE.MeshStandardMaterial({ color: '#b08440', metalness: 0.9, roughness: 0.35 })
+export const fanousGlassMat = new THREE.MeshStandardMaterial({
+  map: lattice,
+  emissiveMap: lattice,
+  emissive: '#ffb860',
+  emissiveIntensity: 0.15,
+  roughness: 0.5,
+  metalness: 0.3,
+  side: THREE.DoubleSide,
+})

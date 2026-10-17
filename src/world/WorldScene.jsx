@@ -11,6 +11,7 @@ import Gates from './Gates'
 import ZoneMarkers from './ZoneMarkers'
 import PromenadeLamps from './PromenadeLamps'
 import LakeReflections from './LakeReflections'
+import Skyline from './Skyline'
 import { ZONES } from './plan'
 
 // Zone content, code-split. Landmarks (structures visible from the air) are always mounted;
@@ -72,6 +73,7 @@ export default function WorldScene() {
       <Gates />
       <PromenadeLamps />
       <LakeReflections />
+      <Skyline />
       {ZONES.map((z) => (
         <ZoneContent key={z.id} zone={z} />
       ))}

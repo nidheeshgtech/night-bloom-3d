@@ -7,12 +7,12 @@ import { mulberry32 } from '../lib/random'
 import { useGarden } from '../lib/store'
 import { arches, archPoint, lamps } from './planting'
 import { pathToWorld } from './layout'
-import { bulbMat, shadows, zoneUniforms } from './materials'
+import { bulbMat, fanousGlassMat, shadows, zoneUniforms } from './materials'
 
 // Sun direction measured from the HDRI's brightest pixel, so shadows match the visible sun.
 export const SUN_DIR = new THREE.Vector3(0.704, 0.486, 0.517).normalize()
 
-const DAY = { env: 0.9, bg: 1.05, sun: 3.4, sunColor: new THREE.Color('#ffe2bf'), fog: new THREE.Color('#cdd9e6'), lamp: 0, bulb: 0 }
+const DAY = { env: 0.9, bg: 1.05, sun: 3.6, sunColor: new THREE.Color('#ffd09a'), fog: new THREE.Color('#e3cba6'), lamp: 0, bulb: 0 }
 const NIGHT = { env: 0.06, bg: 0.04, sun: 0.4, sunColor: new THREE.Color('#9db0ff'), fog: new THREE.Color('#0b1120'), lamp: 22, bulb: 5 }
 
 function Stars() {
@@ -114,6 +114,9 @@ export default function ZoneLighting() {
     sun.intensity = lerp(DAY.sun, NIGHT.sun, t)
     sun.color.lerpColors(DAY.sunColor, NIGHT.sunColor, t)
     if (scene.fog) scene.fog.color.lerpColors(DAY.fog, NIGHT.fog, t)
+    if (scene.fog) skyUniforms.uHaze.value.copy(scene.fog.color)
+    skyUniforms.uHazeAmt.value = lerp(0.75, 0.35, t)
+    fanousGlassMat.emissiveIntensity = lerp(0.15, 3.2, t)
     const lamp = lerp(DAY.lamp, NIGHT.lamp, t)
     lampLights.current.forEach((l) => l && (l.intensity = lamp))
     bulbMat.emissiveIntensity = lerp(DAY.bulb, NIGHT.bulb, t)
@@ -126,7 +129,7 @@ export default function ZoneLighting() {
     <>
       <Environment map={hdri} />
       <SkyBackdrop texture={hdri} />
-      <fogExp2 attach="fog" args={['#cdd9e6', 0.0011]} />
+      <fogExp2 attach="fog" args={['#e3cba6', 0.0011]} />
       <primitive object={sun} />
       <primitive object={sun.target} />
       {lightSpots.map((p, i) => (

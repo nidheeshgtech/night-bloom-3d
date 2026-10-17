@@ -10,6 +10,7 @@ existing garden or attraction. All sculptures, layouts and installations are ori
 | `public/assets/hdri/autumn_field_puresky_2k.hdr` | [Poly Haven](https://polyhaven.com/a/autumn_field_puresky) | Sergej Majboroda (original), Jarod Guest (sky edits) | CC0 1.0 | Sky-only HDRI: used for image-based lighting and as the sky backdrop (no landscape or buildings in frame). |
 | `public/assets/textures/herringbone_pavement/*` (2k) | [Poly Haven](https://polyhaven.com/a/herringbone_pavement) | Poly Haven | CC0 1.0 | Path paving. |
 | `public/assets/textures/grass_ground/*` (1k) | [Poly Haven](https://polyhaven.com/a/grass_ground) | Poly Haven | CC0 1.0 | Lawn base, tinted greener in the shader. |
+| `public/assets/textures/aerial_beach_01/*` (1k) | [Poly Haven](https://polyhaven.com/a/aerial_beach_01) | Rob Tuytel | CC0 1.0 | Desert dune sand, tinted golden in the shader. |
 | `public/assets/textures/farm_soil/*` (1k) | [Poly Haven](https://polyhaven.com/a/farm_soil) | Poly Haven | CC0 1.0 | Bed soil. |
 | `public/assets/textures/mossy_rock/*` (1k) | [Poly Haven](https://polyhaven.com/a/mossy_rock) | Rob Tuytel | CC0 1.0 | Stream and grotto boulders (Wingsong Conservatory). |
 | `public/assets/textures/white_sandstone_bricks/*` (1k) | [Poly Haven](https://polyhaven.com/a/white_sandstone_bricks) | Poly Haven | CC0 1.0 | Path kerb stones. |
@@ -28,6 +29,8 @@ for traceability. Check the asset pages again before publishing in case anything
 - Hibiscus, lantana, fern and alocasia plants; butterfly wing patterns (drawn from general field-guide
   descriptions of each species, not traced from photographs); Seed Lanterns, Light Reeds and Moon
   Lilies: all generated in code in `src/zone/`.
+- Skyline: generic procedural towers, deliberately not modelled on any real building.
+- Fanous lanterns and the 8-point-star lattice: traditional geometric pattern drawn in code.
 - Ambient audio: synthesised with the Web Audio API in `src/lib/audio.js`.
 
 ## Reference images

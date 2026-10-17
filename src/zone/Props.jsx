@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { pathToWorld } from './layout'
 import { BENCH, lamps, pots } from './planting'
-import { bulbMat, metalMat, terracottaMat, woodMat } from './materials'
+import { metalMat, terracottaMat, woodMat } from './materials'
+import Fanous from './Fanous'
 
 const POT_PROFILE = [
   [0, 0],
@@ -23,27 +24,10 @@ function Pots() {
   })
 }
 
-// Classic park lamp: tapered post, lantern with glowing glass, small cap.
+// Fanous lamp posts along the avenue.
 function Lamps() {
-  return lamps.map((l, i) => {
-    const pos = pathToWorld(l.s, l.d)
-    return (
-      <group key={i} position={pos}>
-        <mesh material={metalMat} position={[0, 0.15, 0]} castShadow>
-          <cylinderGeometry args={[0.11, 0.14, 0.3, 12]} />
-        </mesh>
-        <mesh material={metalMat} position={[0, 1.6, 0]} castShadow>
-          <cylinderGeometry args={[0.035, 0.055, 2.9, 10]} />
-        </mesh>
-        <mesh material={bulbMat} position={[0, 3.18, 0]}>
-          <cylinderGeometry args={[0.12, 0.09, 0.36, 6]} />
-        </mesh>
-        <mesh material={metalMat} position={[0, 3.42, 0]} castShadow>
-          <coneGeometry args={[0.19, 0.16, 6]} />
-        </mesh>
-      </group>
-    )
-  })
+  const positions = useMemo(() => lamps.map((l) => pathToWorld(l.s, l.d)), [])
+  return <Fanous positions={positions} />
 }
 
 // Park bench: hardwood slats on cast-metal side frames, facing the path.

@@ -5,7 +5,7 @@ import * as THREE from 'three'
 // Sky drawn from the HDRI with its brightness capped. The raw sun disc is ~10^5 times
 // brighter than the sky and bloom would smear it across the screen; lighting still uses
 // the uncapped HDRI.
-export const skyUniforms = { uMap: { value: null }, uIntensity: { value: 1 } }
+export const skyUniforms = { uMap: { value: null }, uIntensity: { value: 1 }, uHaze: { value: new THREE.Color('#e6cba0') }, uHazeAmt: { value: 0.75 } }
 
 export default function SkyBackdrop({ texture }) {
   const material = useMemo(() => {
@@ -25,6 +25,8 @@ export default function SkyBackdrop({ texture }) {
       fragmentShader: /* glsl */ `
         uniform sampler2D uMap;
         uniform float uIntensity;
+        uniform vec3 uHaze;
+        uniform float uHazeAmt;
         varying vec3 vDir;
         void main() {
           vec3 d = normalize(vDir);
@@ -32,6 +34,9 @@ export default function SkyBackdrop({ texture }) {
           vec3 c = texture2D(uMap, uv).rgb * uIntensity;
           // Soft knee instead of a hard clip so the sun keeps a gentle glow.
           c = c / (1.0 + max(vec3(0.0), c - 1.2) * 0.6);
+          // Desert dust: the sky fades into a warm haze toward the horizon.
+          float h = 1.0 - smoothstep(-0.02, 0.32, d.y);
+          c = mix(c, uHaze, h * uHazeAmt);
           gl_FragColor = vec4(min(c, vec3(2.2)), 1.0);
           #include <colorspace_fragment>
         }`,

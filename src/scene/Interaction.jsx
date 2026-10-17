@@ -41,7 +41,8 @@ export default function Interaction() {
           sphere.radius = r
           if (sphere.containsPoint(camera.position)) continue
           if (ray.intersectSphere(sphere, hit)) {
-            const d = hit.distanceTo(ray.origin)
+            // pickBias lets small features (plant specimens) win over large ones around them.
+            const d = hit.distanceTo(ray.origin) - (s.pickBias || 0)
             if (!best || d < best.d) best = { d, kind: 'sculpture', id: s.id }
           }
         }

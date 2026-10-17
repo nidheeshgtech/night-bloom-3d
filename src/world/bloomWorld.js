@@ -9,6 +9,9 @@ import { petalBeds } from './petalPlanting'
 import { PROMENADE_PALMS, TREES } from './TreeBelts'
 import { buildTour } from './tour'
 import { PAVILIONS } from './Pavilions'
+import { HERB_FEATURES } from '../zone/herbarium/features'
+import { HERB_WALLS, PAV_CORNERS, C as HERB_C, toWorld as herbToWorld } from '../zone/herbarium/layout'
+import { CYPRESSES, FRUIT_TREES, HERB_GHAF, HERB_PALMS, getHerbHeads } from '../zone/herbarium/planting'
 import { GH, POND, SPRING, WALLS, glassCenter, halfWidth, inside as insideGlasshouse, toWorld as wingToWorld } from '../zone/wingsong/layout'
 import { getWingsongTargets } from '../zone/wingsong/library'
 import { PALMS_IN } from '../zone/wingsong/planting'
@@ -140,6 +143,7 @@ const sculptures = [
     viewHeight: 3,
     pick: [(() => { const p = wingToWorld(SPRING[0] + 1, SPRING[1], 0.6); return [p.x, p.y, p.z, 1.6] })()],
   },
+  ...HERB_FEATURES,
   {
     id: 'seedlanterns',
     zone: 'lantern',
@@ -216,6 +220,9 @@ function petalHeads() {
   return { heads, species }
 }
 const extra = petalHeads()
+const herb = getHerbHeads()
+extra.heads.push(...herb.heads)
+extra.species.push(...herb.species)
 const wing = getWingsongTargets()
 for (let i = 0; i < wing.heads.length; i++) {
   extra.heads.push(wing.heads[i].x, wing.heads[i].y, wing.heads[i].z)
@@ -251,8 +258,15 @@ export const bloomWorld = {
     ...PALMS_IN.map((p) => ({ ...xz(p), r: 0.55 })),
     ...LANTERNS.map((L) => ({ ...xz(L.pos), r: L.hero ? 0.6 : 0.35 })),
     ...PAVILIONS.map((p) => ({ ...xz(p.pos), r: 1.75 })),
+    { ...xz(herbToWorld(HERB_C, 0)), r: 4.0 },
+    ...PAV_CORNERS.map((p) => ({ ...xz(p), r: 0.45 })),
+    ...FRUIT_TREES.map((t) => ({ ...xz(t.pos), r: 0.4 })),
+    ...CYPRESSES.map((p) => ({ ...xz(p), r: 0.5 })),
+    ...HERB_PALMS.map((p) => ({ ...xz(p.pos), r: 0.55 })),
+    { ...xz(HERB_GHAF), r: 0.5 },
+    ...[1, 3, 5, 7].map((k) => ({ ...xz(herbToWorld(HERB_C + Math.cos((k * Math.PI) / 4) * 4.7, Math.sin((k * Math.PI) / 4) * 4.7)), r: 0.25 })),
   ],
-  walls: WALLS,
+  walls: [...WALLS, ...HERB_WALLS],
   zones,
   sculptures,
   flowers: { heads, species, count: () => species.length },

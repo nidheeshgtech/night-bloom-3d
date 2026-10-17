@@ -24,6 +24,10 @@ const CONTENT = {
     detail: lazy(() => import('../zone/wingsong/WingsongDetail')),
     radius: Infinity,
   },
+  herbarium: {
+    detail: lazy(() => import('../zone/herbarium/HerbariumZone')),
+    radius: Infinity,
+  },
   lantern: {
     landmark: lazy(() => import('../zone/lantern/LanternLandmark')),
     detail: lazy(() => import('../zone/lantern/LanternDetail')),

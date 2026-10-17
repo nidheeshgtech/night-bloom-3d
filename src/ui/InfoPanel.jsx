@@ -21,7 +21,7 @@ function SculptureCard({ id }) {
           </div>
         ))}
       </dl>
-      <p className="label">Flowers used</p>
+      {s.flowers.length > 0 && <p className="label">Flowers used</p>}
       <ul className="chips">
         {s.flowers.map((f) => {
           const sp = SPECIES.find((x) => x.id === f)

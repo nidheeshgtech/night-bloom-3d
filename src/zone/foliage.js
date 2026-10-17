@@ -253,3 +253,36 @@ export function ghafGeometry(seed) {
   }
   return b.toGeometry()
 }
+
+// Small orchard tree (bitter orange, pomegranate): round dense crown with fruit dotted over it.
+// fruit and leaf are linear vertex-colour multipliers.
+export function fruitTreeGeometry(seed, fruit, leaf = [0.85, 0.95, 0.8]) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  b.tube([V(0, 0, 0), V(0.06, 0.8, 0.02), V(0, 1.35, 0)], [0.11, 0.09, 0.07], 7, [0.15, 0.11, 0.08])
+  const c = V(0, 2.25, 0)
+  const r = 1.15
+  b.grid(4, 8, (i, j) => {
+    const e = (i / 4) * Math.PI - Math.PI / 2
+    const az = (j / 8) * Math.PI * 2
+    return { p: c.clone().add(V(Math.cos(e) * Math.cos(az) * r * 0.75, Math.sin(e) * r * 0.65, Math.cos(e) * Math.sin(az) * r * 0.75)), c: CORE }
+  })
+  for (let i = 0; i < 120; i++) {
+    const e = Math.asin(rand() * 2 - 1)
+    const az = rand() * Math.PI * 2
+    const n = V(Math.cos(e) * Math.cos(az), Math.sin(e) * 0.85, Math.cos(e) * Math.sin(az)).normalize()
+    const v = 0.8 + rand() * 0.3
+    card(b, c.clone().addScaledVector(n, r * (0.85 + rand() * 0.15)), n.clone().add(V(0, 0.25, 0)).normalize(), 0.42, 'foliage', [leaf[0] * v, leaf[1] * v, leaf[2] * v], rand)
+  }
+  for (let i = 0; i < 30; i++) {
+    const e = Math.asin(rand() * 1.6 - 0.9)
+    const az = rand() * Math.PI * 2
+    const p = c.clone().add(V(Math.cos(e) * Math.cos(az), Math.sin(e) * 0.85, Math.cos(e) * Math.sin(az)).multiplyScalar(r * 1.02))
+    b.grid(3, 6, (ii, jj) => {
+      const e2 = (ii / 3) * Math.PI - Math.PI / 2
+      const a2 = (jj / 6) * Math.PI * 2
+      return { p: p.clone().add(V(Math.cos(e2) * Math.cos(a2), Math.sin(e2), Math.cos(e2) * Math.sin(a2)).multiplyScalar(0.06)), c: fruit }
+    })
+  }
+  return b.toGeometry()
+}

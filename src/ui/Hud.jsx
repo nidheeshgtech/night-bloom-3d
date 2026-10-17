@@ -129,7 +129,7 @@ export default function Hud() {
   // Aerial world view lists zones; otherwise the inspectable features of the current zone.
   const showZones = mode === 'aerial' && !focused && zones.length > 0
   const area = mode === 'walk' ? here : focused?.id
-  const features = world.sculptures.filter((s) => !s.zone || !area || s.zone === area)
+  const features = world.sculptures.filter((s) => s.chip !== false && (!s.zone || !area || s.zone === area))
   const canTravel = mode === 'aerial' || mode === 'walk' || mode === 'inspect'
 
   return (

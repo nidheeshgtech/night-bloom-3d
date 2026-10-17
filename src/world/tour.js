@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { avenue } from '../zone/layout'
 import { innerPath, toWorld as wingToWorld } from '../zone/wingsong/layout'
 import { lanternPath } from '../zone/lantern/layout'
+import { toWorld as herbToWorld } from '../zone/herbarium/layout'
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z)
 const up = (p, h) => p.clone().setY(p.y + h)
@@ -50,9 +51,24 @@ export function buildTour() {
     },
     { caption: 'Wingsong Conservatory', sub: 'Hundreds of free-flying butterflies, each one clickable', ...inside, duration: 18, ease: 'none' },
     {
+      caption: 'Herbarium Walk',
+      sub: 'A chahar bagh: four gardens around a fountain, quartered by water',
+      pos: [wingToWorld(30, 0, 16), herbToWorld(60, 0, 22), herbToWorld(78, 0, 4.5)],
+      look: [herbToWorld(100, 0, 0), herbToWorld(100, 0, 0), herbToWorld(100, 0, 1.5)],
+      duration: 9,
+    },
+    {
+      caption: 'Herbarium Walk',
+      sub: 'Fruit trees, parterres and labelled plant specimens',
+      pos: [herbToWorld(84, 0, 4.5), herbToWorld(94, 0, 3.2), herbToWorld(106, 0, 3.2), herbToWorld(118, 0, 3.6)],
+      look: [herbToWorld(110, 0, 2), herbToWorld(120, 0, 2.5), herbToWorld(128, 0, 4), herbToWorld(128, 0, 5)],
+      duration: 12,
+      ease: 'none',
+    },
+    {
       caption: 'Golden hour',
       sub: 'Light and atmosphere change with the time of day',
-      pos: [wingToWorld(40, 0, 18), V(30, 60, 10), V(-50, 45, 50)],
+      pos: [herbToWorld(128, 0, 22), V(30, 60, 10), V(-50, 45, 50)],
       look: [lake, lake, V(-80, 0, 45)],
       duration: 9,
       night: 0.55,

@@ -29,9 +29,9 @@ const DEFS = [
     name: 'Herbarium Walk',
     theme: 'Botanical garden',
     angle: 30,
-    status: 'soon',
-    tagline: 'Formal parterres, a lily pond and labelled plant collections',
-    description: 'A calm, formal garden of clipped hedges, specimen plants and a bronze ribbon gazebo beside a lily pond.',
+    status: 'open',
+    tagline: 'A chahar bagh: four gardens around a fountain, quartered by water',
+    description: 'A formal four-part garden in the Islamic tradition: raised water channels, parterre beds, fruit trees, a domed pavilion and labelled plant specimens.',
     border: { species: 'daisy', colors: ['#ffffff', '#e4d8ff', '#ffffff'] },
   },
   {

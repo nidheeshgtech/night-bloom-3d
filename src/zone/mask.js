@@ -6,6 +6,8 @@ import { QUAY_RADIUS } from '../world/terrain'
 import { petalBands } from '../world/petalPlanting'
 import { PATH_HALF_IN, POND, STREAM_HALF, innerPath, stream, toWorld as wingToWorld } from './wingsong/layout'
 import { LANTERN_PATH_HALF, PLAZA, lanternPath, plazaCenter } from './lantern/layout'
+import { herbMaskPolys } from './herbarium/layout'
+import { herbBloomPolys } from './herbarium/planting'
 
 // World-space masks over [-E, E]² on x and z.
 //   mask:  R = no grass (paths, beds, hedges, lake), G = soil (planting beds)
@@ -54,6 +56,14 @@ function band(ctx, path, d0, d1, colorAt, seg = 1) {
 }
 
 const benchGap = (s) => s > BENCH_GAP[0] && s < BENCH_GAP[1]
+
+function poly(ctx, pts, fill) {
+  ctx.fillStyle = fill
+  ctx.beginPath()
+  pts.forEach(([x, z], i) => (i ? ctx.lineTo(...px(x, z)) : ctx.moveTo(...px(x, z))))
+  ctx.closePath()
+  ctx.fill()
+}
 
 // Flower-carpet designs filling the "opening soon" petals, drawn in each petal's local
 // frame (x along the petal axis from its centre, y across). `paint(i)` picks the fill.
@@ -191,6 +201,7 @@ export function getMasks() {
   m.fill()
 
   carpets(m, () => () => '#ff0')
+  for (const p of herbMaskPolys()) poly(m, p.pts, p.fill)
 
   // --- Far-distance flower carpet colours
   const bc = document.createElement('canvas')
@@ -204,6 +215,7 @@ export function getMasks() {
   }
   for (const pb of petalBands) band(b, pb.path, pb.d0, pb.d1, pb.colorAt)
   carpets(b, (design) => (i) => design.colors[i % design.colors.length])
+  for (const p of herbBloomPolys()) poly(b, p.pts, p.fill)
 
   const mask = new THREE.CanvasTexture(mc)
   mask.colorSpace = THREE.NoColorSpace

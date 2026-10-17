@@ -245,11 +245,14 @@ export default function Hud() {
             <IconBtn icon={showOn ? 'close' : 'spark'} label={showOn ? 'Stop light show' : 'Light show'} glow={!showOn} onClick={showOn ? rig.stopShow : rig.lightShow} />
           )}
           {mode === 'flying' && <span className="bar-status">Flying…</span>}
-          <label className="bar-time" title="Time of day">
-            <Icon name="sun" size={15} />
-            <input type="range" min="0" max="1" step="0.01" value={night} onChange={(e) => set({ night: Number(e.target.value) })} aria-label="Time of day" />
-            <Icon name="moon" size={15} />
-          </label>
+          <div className="bar-mode" role="group" aria-label="Time of day">
+            <button className={night < 0.5 ? 'on' : ''} aria-pressed={night < 0.5} aria-label="Day" data-tip="Day" onClick={() => set({ night: 0 })}>
+              <Icon name="sun" size={17} />
+            </button>
+            <button className={night >= 0.5 ? 'on' : ''} aria-pressed={night >= 0.5} aria-label="Night" data-tip="Night" onClick={() => set({ night: 1 })}>
+              <Icon name="moon" size={17} />
+            </button>
+          </div>
         </div>
       )}
 

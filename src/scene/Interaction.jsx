@@ -95,9 +95,11 @@ export default function Interaction() {
       p.y = e.clientY
       if (useGarden.getState().mode !== 'walk') return
       if (Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > CLICK_SLOP) player.dragging = true
-      const k = e.pointerType === 'touch' ? 0.005 : 0.0028
-      player.yaw -= dx * k
-      player.pitch = THREE.MathUtils.clamp(player.pitch - dy * k, -1.2, 1.2)
+      // Grab-to-look, like Street View: the scene follows the pointer, and the angle per pixel
+      // matches the camera's field of view so the grabbed spot stays under the finger.
+      const k = THREE.MathUtils.degToRad(camera.fov) / el.clientHeight
+      player.yaw += dx * k
+      player.pitch = THREE.MathUtils.clamp(player.pitch + dy * k, -1.2, 1.2)
     }
 
     const onUp = (e) => {

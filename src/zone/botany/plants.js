@@ -326,3 +326,57 @@ export function basketBowl() {
   })
   return b.toGeometry()
 }
+
+// Chinese hibiscus: five broad overlapping petals around a long staminal column, ~12 cm.
+export function hibiscusBloom(b, m, { rand, color = [1, 1, 1] }) {
+  const len = 0.065
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2 + rand() * 0.15
+    const radial = V(Math.cos(a), 0, Math.sin(a))
+    const tangent = V(-Math.sin(a), 0, Math.cos(a))
+    const width = 0.07
+    b.grid(3, 2, (i, j) => {
+      const t = i / 3
+      const s = j / 2 - 0.5
+      const p = radial
+        .clone()
+        .multiplyScalar(0.004 + t * len)
+        .add(V(0, 0.022 * t - 0.012 * t * t + (0.25 - s * s) * 0.012 * t, 0))
+        .addScaledVector(tangent, s * width * (0.3 + t * 0.7) + 0.006 * t)
+      return { p, uv: uv('hibiscus', j / 2, 1 - t), c: color, tint: 0 }
+    }, m)
+  }
+  b.tube([V(0, 0, 0), V(0.004, 0.04, 0), V(0.008, 0.075, 0.002)], [0.002, 0.0018, 0.0015], 4, [0.85, 0.75, 0.3], m)
+  b.tube([V(0.008, 0.073, 0.002), V(0.009, 0.08, 0.002)], [0.004, 0.003], 4, [0.95, 0.85, 0.2], m)
+}
+
+// Alocasia-style clump: a few huge arrow-shaped leaves on long upright stalks.
+export function alocasiaPlant(seed) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  const n = 5 + Math.floor(rand() * 3)
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + rand() * 0.6
+    const h = 0.7 + rand() * 0.6
+    const top = V(Math.cos(a) * 0.25, h, Math.sin(a) * 0.25)
+    b.tube([V(0, 0, 0), V(Math.cos(a) * 0.1, h * 0.6, Math.sin(a) * 0.1), top], [0.03, 0.022, 0.016], 5, [0.08, 0.16, 0.05])
+    const dir = V(Math.cos(a), 0.35 + rand() * 0.4, Math.sin(a))
+    const len = 0.6 + rand() * 0.35
+    leafShape(b, along(top, dir, (rand() - 0.5) * 0.4), { len, wid: len * 0.7, segL: 5, segW: 2, fold: 0.18, curl: 0.25, c: leafTone(rand) })
+  }
+  return b.toGeometry()
+}
+
+// Fern clump: arching fronds from a central crown.
+export function fernPlant(seed) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  const n = 9 + Math.floor(rand() * 4)
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + rand() * 0.5
+    const dir = V(Math.cos(a), 0.6 + rand() * 0.6, Math.sin(a))
+    const len = 0.45 + rand() * 0.3
+    leafCard(b, along(V(0, 0.03, 0), dir, (rand() - 0.5) * 0.5), { len, wid: len * 0.42, region: 'fern', bend: 0.55, c: leafTone(rand) })
+  }
+  return b.toGeometry()
+}

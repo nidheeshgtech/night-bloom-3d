@@ -39,7 +39,8 @@ const DEFS = [
     name: 'Wingsong Conservatory',
     theme: 'Butterfly sanctuary',
     angle: -30,
-    status: 'soon',
+    status: 'open',
+    pinHeight: 16,
     tagline: 'A leaf-shaped glasshouse alive with butterflies',
     description: 'A single organic glasshouse over a stream and nectar-rich shrubs, home to hundreds of free-flying butterflies.',
     border: { species: 'marigold', colors: ['#ffb000', '#ff6a00', '#ffcc1a'] },
@@ -69,7 +70,7 @@ const DEFS = [
     name: 'Lantern Shore',
     theme: 'Light garden',
     angle: 150,
-    status: 'soon',
+    status: 'open',
     tagline: 'Glowing installations on the lake shore after dusk',
     description: 'Light sculptures that wake at sunset and reflect in the lake, with installations that respond to visitors.',
     border: { species: 'petunia', colors: ['#ffffff', '#b45ce0', '#f2f2ff'] },
@@ -102,7 +103,7 @@ export const ZONES = DEFS.map((d) => {
     const toAxis = new THREE.Vector2(dir.x * 100 - mid.x, dir.y * 100 - mid.z)
     return { path, inward: Math.sign(toAxis.x * mid.nx + toAxis.y * mid.nz) }
   })
-  return { ...d, a, dir, gate, center, sides }
+  return { pinHeight: 9, ...d, a, dir, gate, center, sides }
 })
 
 export const zoneById = (id) => ZONES.find((z) => z.id === id)

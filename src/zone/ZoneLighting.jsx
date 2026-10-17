@@ -95,6 +95,8 @@ export default function ZoneLighting() {
     lampLights.current.forEach((l) => l && (l.intensity = lamp))
     bulbMat.emissiveIntensity = lerp(DAY.bulb, NIGHT.bulb, t)
     zoneUniforms.uTime.value = state.clock.elapsedTime
+    zoneUniforms.uNight.value = t
+    zoneUniforms.uPlayer.value.copy(state.camera.position)
   })
 
   return (

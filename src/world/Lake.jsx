@@ -5,7 +5,7 @@ import { QUAY_RADIUS, WATER_LEVEL, heightAt } from './terrain'
 import { pbrSet } from '../zone/materials'
 
 // Tileable ripple normal map from integer-frequency sine waves.
-function rippleTexture() {
+export function rippleTexture() {
   const N = 256
   const h = new Float32Array(N * N)
   const waves = [

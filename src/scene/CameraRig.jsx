@@ -19,6 +19,7 @@ export default function CameraRig() {
   const world = getWorld()
   const mode = useGarden((s) => s.mode)
   const camera = useThree((s) => s.camera)
+  const scene = useThree((s) => s.scene)
   const controls = useRef()
   const tween = useRef()
   const memory = useRef(null)
@@ -27,8 +28,8 @@ export default function CameraRig() {
   useEffect(() => {
     camera.rotation.order = 'YXZ'
     controls.current.target.copy(world.aerial.target)
-    if (import.meta.env.DEV && window.__garden) window.__garden.camera = camera
-  }, [camera, world])
+    if (import.meta.env.DEV && window.__garden) Object.assign(window.__garden, { camera, scene })
+  }, [camera, scene, world])
 
   useEffect(() => {
     const set = useGarden.setState
@@ -198,6 +199,21 @@ export default function CameraRig() {
     let nz = player.pos.z + (-cos * mz - sin * mx) * speed
 
     ;[nx, nz] = world.clamp(nx, nz)
+    // Walls: push out of any segment closer than the body radius.
+    for (const [ax, az, bx, bz] of world.walls || []) {
+      const ex = bx - ax
+      const ez = bz - az
+      const t = Math.max(0, Math.min(1, ((nx - ax) * ex + (nz - az) * ez) / (ex * ex + ez * ez || 1)))
+      const cx = ax + ex * t
+      const cz = az + ez * t
+      const dx = nx - cx
+      const dz = nz - cz
+      const d = Math.hypot(dx, dz)
+      if (d < 0.35 && d > 1e-6) {
+        nx = cx + (dx / d) * 0.35
+        nz = cz + (dz / d) * 0.35
+      }
+    }
     for (const c of world.colliders) {
       const dx = nx - c.x
       const dz = nz - c.z

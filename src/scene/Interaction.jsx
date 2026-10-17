@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { useGarden } from '../lib/store'
 import { player, rig } from '../lib/player'
 import { getWorld } from '../lib/world'
+import { allPickers } from '../lib/picking'
 
 const CLICK_SLOP = 6
 const FLOWER_REACH = 30
@@ -33,6 +34,8 @@ export default function Interaction() {
       let best = null
 
       for (const s of world.sculptures) {
+        // Standing inside a feature (e.g. the glasshouse) shouldn't make every click select it.
+        if (s.contains && s.contains(camera.position)) continue
         for (const [x, y, z, r] of s.pick) {
           sphere.center.set(x, y, z)
           sphere.radius = r
@@ -53,6 +56,10 @@ export default function Interaction() {
         const d = pt.distanceTo(ray.origin)
         if (d > FLOWER_REACH || (best && d > best.d)) continue
         if (ray.distanceSqToPoint(pt) < (base + d * 0.012) ** 2) best = { d, kind: 'flower', index: i }
+      }
+      for (const picker of allPickers()) {
+        const hit = picker(ray, best ? best.d : Infinity)
+        if (hit && (!best || hit.d < best.d)) best = { ...hit, kind: 'custom' }
       }
       return best
     }
@@ -91,6 +98,10 @@ export default function Interaction() {
       }
       if (result.kind === 'sculpture') {
         rig.inspect(result.id)
+        return
+      }
+      if (result.kind === 'custom') {
+        result.onSelect()
         return
       }
       const species = world.flowers.species[result.index]

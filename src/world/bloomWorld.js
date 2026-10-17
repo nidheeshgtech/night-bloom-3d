@@ -7,6 +7,10 @@ import { QUAY_RADIUS, heightAt } from './terrain'
 import { WORLD_RADIUS, ZONES, spokes } from './plan'
 import { petalBeds } from './petalPlanting'
 import { PROMENADE_PALMS, TREES } from './TreeBelts'
+import { GH, POND, SPRING, WALLS, glassCenter, halfWidth, inside as insideGlasshouse, toWorld as wingToWorld } from '../zone/wingsong/layout'
+import { getWingsongTargets } from '../zone/wingsong/library'
+import { PALMS_IN } from '../zone/wingsong/planting'
+import { LANTERNS, LILIES, plazaCenter, toWorld as lanternToWorld } from '../zone/lantern/layout'
 
 const EYE = 1.7
 const xz = (v) => ({ x: v.x, z: v.z })
@@ -91,6 +95,106 @@ const sculptures = [
     viewHeight: 2.2,
     pick: [...pickAlong(2, 11, BED_IN + 1.2, 0.3, 1.2), ...pickAlong(2, 11, -(BED_IN + 1.2), 0.3, 1.2)],
   },
+  {
+    id: 'glasshouse',
+    zone: 'wingsong',
+    kind: 'Conservatory',
+    name: 'Wingsong Glasshouse',
+    tagline: 'A leaf-shaped glasshouse with ribs drawn like leaf veins',
+    description:
+      'A single glazed leaf, 46 m long and 11 m high. A bronze midrib runs along the ridge and the ribs sweep forward from it like the veins of a leaf. Inside, a spring feeds a stream through nectar planting for free-flying butterflies.',
+    flowers: ['hibiscus', 'lantana', 'petunia', 'daisy'],
+    facts: [
+      ['Length', `${GH.L} m`],
+      ['Ridge height', `${GH.H} m`],
+      ['Butterflies', '5 species'],
+    ],
+    center: glassCenter(),
+    contains: (p) => insideGlasshouse(p, -0.5),
+    viewDistance: 34,
+    viewHeight: 14,
+    pick: Array.from({ length: 7 }, (_, i) => {
+      const a = GH.a0 + 4 + i * 5.5
+      const p = wingToWorld(a, 0, 5)
+      return [p.x, p.y, p.z, Math.min(5, halfWidth(a) * 0.45)]
+    }),
+  },
+  {
+    id: 'spring',
+    zone: 'wingsong',
+    kind: 'Water feature',
+    name: 'The Spring and Stream',
+    tagline: 'Water rising from a mossy grotto and running to a pond',
+    description:
+      'A spring rises among mossy boulders at the far end of the glasshouse and meanders past ferns to a still pond by the door. In the full world plan this water comes from the rainforest waterfall.',
+    flowers: [],
+    facts: [
+      ['Stream', '≈22 m'],
+      ['Pond', `${POND.r * 2} m across`],
+      ['Banks', 'Mossy boulders, ferns'],
+    ],
+    center: wingToWorld(SPRING[0] - 6, 0, 0.6),
+    viewDistance: 9,
+    viewHeight: 3,
+    pick: [(() => { const p = wingToWorld(SPRING[0] + 1, SPRING[1], 0.6); return [p.x, p.y, p.z, 1.6] })()],
+  },
+  {
+    id: 'seedlanterns',
+    zone: 'lantern',
+    kind: 'Light installation',
+    name: 'Seed Lantern Grove',
+    tagline: 'Opal seed pods that wake at dusk',
+    description:
+      'Forty teardrop pods on slender stems, opal by day and glowing after sunset. They brighten as you walk among them. Touch one and a wave of light rolls out through the grove.',
+    flowers: [],
+    facts: [
+      ['Lanterns', String(LANTERNS.length)],
+      ['Tallest', '≈5.5 m (centre plaza)'],
+      ['Interaction', 'Proximity + touch wave'],
+    ],
+    center: lanternToWorld(30, 0, 2),
+    viewDistance: 22,
+    viewHeight: 8,
+    pick: [],
+  },
+  {
+    id: 'reeds',
+    zone: 'lantern',
+    kind: 'Light installation',
+    name: 'Light Reeds',
+    tagline: 'A meadow of glowing buds that ripples around you',
+    description:
+      'Thousands of slender reeds sway in drifts across the meadow. After dark their buds glow, and rings of light roll outward from wherever you stand.',
+    flowers: [],
+    facts: [
+      ['Reeds', '≈2,000'],
+      ['Height', '1.1–2.3 m'],
+      ['Best seen', 'After sunset'],
+    ],
+    center: lanternToWorld(20, 10, 1),
+    viewDistance: 12,
+    viewHeight: 3,
+    pick: [[...lanternToWorld(20, 10, 1).toArray(), 3], [...lanternToWorld(40, -11, 1).toArray(), 3]],
+  },
+  {
+    id: 'moonlilies',
+    zone: 'lantern',
+    kind: 'Light installation',
+    name: 'Moon Lily Pool',
+    tagline: 'Floating flowers of light on the lake',
+    description:
+      'Glowing lilies drift on the lake off Lantern Shore. At night they and the promenade lamps lay trails of light across the water.',
+    flowers: [],
+    facts: [
+      ['Lilies', String(LILIES.length)],
+      ['Colours', 'Moon blue and blush pink'],
+      ['Best seen', 'From the promenade at night'],
+    ],
+    center: (() => { const p = LILIES[0].pos.clone(); p.y = 0; return p })(),
+    viewDistance: 16,
+    viewHeight: 5,
+    pick: [],
+  },
 ]
 
 // ---------- Pickable flower heads: avenue beds + baskets + petal borders ----------
@@ -110,6 +214,11 @@ function petalHeads() {
   return { heads, species }
 }
 const extra = petalHeads()
+const wing = getWingsongTargets()
+for (let i = 0; i < wing.heads.length; i++) {
+  extra.heads.push(wing.heads[i].x, wing.heads[i].y, wing.heads[i].z)
+  extra.species.push(wing.species[i])
+}
 const heads = new Float32Array(FLOWER_HEADS.heads.length + extra.heads.length)
 heads.set(FLOWER_HEADS.heads)
 heads.set(extra.heads, FLOWER_HEADS.heads.length)
@@ -137,11 +246,14 @@ export const bloomWorld = {
     ...PALMS.map((p) => ({ ...xz(p.pos), r: 0.55 })),
     ...PROMENADE_PALMS.map((p) => ({ ...xz(p.pos), r: 0.55 })),
     ...TREES.map((t) => ({ ...xz(t.pos), r: 0.45 * t.s })),
+    ...PALMS_IN.map((p) => ({ ...xz(p), r: 0.55 })),
+    ...LANTERNS.map((L) => ({ ...xz(L.pos), r: L.hero ? 0.6 : 0.35 })),
   ],
+  walls: WALLS,
   zones,
   sculptures,
   flowers: { heads, species, count: () => species.length },
-  speciesIds: [SPECIES_INDEX.petunia, SPECIES_INDEX.marigold, SPECIES_INDEX.daisy],
+  speciesIds: [SPECIES_INDEX.petunia, SPECIES_INDEX.marigold, SPECIES_INDEX.daisy, 7, 8],
   pickRadius: 0.05,
   marker: { radius: 0.06, lift: 0.015 },
   spawn: zones[0].spawn,

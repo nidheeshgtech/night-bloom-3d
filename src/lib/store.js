@@ -8,6 +8,7 @@ export const useGarden = create((set) => ({
   selected: null, // { kind: 'sculpture' | 'zone', id } | { kind: 'flower', index, species }
   focus: null, // zone id the aerial camera is framing
   discovered: [], // species indices the visitor has clicked
+  discoveredButterflies: [], // butterfly species indices identified
   night: 0, // 0 = golden hour, 1 = night
   quality: coarse || small ? 'low' : 'high',
   isTouch: coarse,

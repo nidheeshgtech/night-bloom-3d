@@ -38,7 +38,7 @@ function ribbon(samples, d0, d1, across) {
 }
 
 let paving = null
-const pavingMaterial = () => {
+export const pavingMaterial = () => {
   if (paving) return paving
   const t = pbrSet('herringbone_pavement', 1)
   paving = new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, aoMap: t.arm, roughness: 1 })

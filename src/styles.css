@@ -556,3 +556,8 @@ input:focus-visible {
 .panel .status.open {
   color: var(--accent);
 }
+
+.panel .fine-print {
+  font-size: 12px;
+  color: var(--ink-faint);
+}

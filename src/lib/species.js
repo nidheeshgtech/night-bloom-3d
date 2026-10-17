@@ -71,6 +71,26 @@ export const SPECIES = [
     note: 'The flowers open in sunshine and close at dusk or under heavy cloud. The blue-violet centre is typical of the species.',
     color: '#f4f1ff',
   },
+  {
+    id: 'hibiscus',
+    name: 'Chinese Hibiscus',
+    latin: 'Hibiscus rosa-sinensis',
+    family: 'Malvaceae',
+    origin: 'Tropical Asia (cultivated hybrid)',
+    season: 'Year-round in warm climates',
+    note: 'Each flower usually lasts a single day. A favourite nectar source for butterflies and sunbirds.',
+    color: '#e8304a',
+  },
+  {
+    id: 'lantana',
+    name: 'Lantana',
+    latin: 'Lantana camara',
+    family: 'Verbenaceae',
+    origin: 'Tropical Americas',
+    season: 'Year-round in warm climates',
+    note: 'Its florets change colour as they age, and it is a strong butterfly magnet. It is invasive in many countries, so it is best grown where it cannot spread.',
+    color: '#ffb02e',
+  },
 ]
 
 export const speciesColor = (id) => new THREE.Color(SPECIES.find((s) => s.id === id).color)

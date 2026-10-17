@@ -9,7 +9,7 @@ export default function ZoneMarkers() {
   const focus = useGarden((s) => s.focus)
   if (mode !== 'aerial') return null
   return ZONES.map((z) => (
-    <Html key={z.id} position={[z.center.x, z.center.y + 9, z.center.z]} center zIndexRange={[10, 0]}>
+    <Html key={z.id} position={[z.center.x, z.center.y + z.pinHeight, z.center.z]} center zIndexRange={[10, 0]}>
       <button className={`zone-pin ${focus === z.id ? 'active' : ''} ${z.status}`} onClick={() => rig.focusZone(z.id)}>
         <span className="zone-pin-name">{z.name}</span>
         <span className="zone-pin-theme">{z.status === 'open' ? z.theme : `${z.theme} · planned`}</span>

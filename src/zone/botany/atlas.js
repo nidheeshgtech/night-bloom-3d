@@ -17,6 +17,9 @@ export const REGION = {
   coir: [1536, 1536, 256, 256],
   white: [1792, 1536, 128, 128],
   trunk: [1536, 1792, 512, 256],
+  hibiscus: [1536, 0, 256, 256],
+  lantana: [1792, 0, 256, 256],
+  fern: [1536, 256, 512, 256],
 }
 
 const INSET = 3 // px, keeps mip bleed from neighbouring regions out
@@ -349,6 +352,89 @@ function trunk(ctx, rand) {
   })
 }
 
+// Hibiscus: broad fan petal, base at bottom, neutral so the instance colour tints it;
+// the dark eye at the base is painted in.
+function hibiscus(ctx, rand) {
+  clip(ctx, 'hibiscus', (w, h) => {
+    petalShape(ctx, w, h, (t) => Math.min(1, Math.sin(Math.PI * Math.min(1, t * 0.95)) * 1.25 + t * 0.2) * 0.95, 6, rand)
+    const g = ctx.createLinearGradient(0, h, 0, 0)
+    g.addColorStop(0, 'rgb(90,10,30)')
+    g.addColorStop(0.2, 'rgb(150,30,50)')
+    g.addColorStop(0.32, grey(0.9))
+    g.addColorStop(1, grey(1))
+    ctx.fillStyle = g
+    ctx.fill()
+    ctx.save()
+    ctx.clip()
+    ctx.globalCompositeOperation = 'multiply'
+    for (let i = 0; i < 22; i++) {
+      const x = w * (0.05 + 0.9 * (i / 21))
+      ctx.strokeStyle = grey(0.82, 0.6)
+      ctx.lineWidth = 1.4
+      ctx.beginPath()
+      ctx.moveTo(w / 2, h)
+      ctx.quadraticCurveTo(w / 2 + (x - w / 2) * 0.4, h * 0.5, x, 0)
+      ctx.stroke()
+    }
+    ctx.restore()
+  })
+}
+
+// Lantana: leaves with domed umbels of tiny florets, yellow centres ageing to orange/pink.
+function lantana(ctx, rand) {
+  clip(ctx, 'lantana', (w, h) => {
+    const greens = ['#2d5a22', '#386b28', '#447a2e']
+    for (let i = 0; i < 70; i++) {
+      const r = Math.sqrt(rand()) * w * 0.44
+      const a = rand() * Math.PI * 2
+      ovatePath(ctx, w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r, 26, 15, rand() * 6.3)
+      ctx.fillStyle = greens[Math.floor(rand() * 3)]
+      ctx.fill()
+    }
+    const schemes = [
+      ['#ffe14a', '#ff9a1f', '#ff4f6e'],
+      ['#fff07a', '#ffc23a', '#ff7a2a'],
+      ['#fff2a8', '#ff8fc8', '#e2408f'],
+    ]
+    for (let u = 0; u < 9; u++) {
+      const cx = w * (0.18 + 0.64 * rand())
+      const cy = h * (0.18 + 0.64 * rand())
+      const sc = schemes[Math.floor(rand() * schemes.length)]
+      for (let f = 0; f < 26; f++) {
+        const rr = Math.sqrt(rand()) * 22
+        const fa = rand() * Math.PI * 2
+        const k = rr < 7 ? 0 : rr < 15 ? 1 : 2
+        ctx.fillStyle = sc[k]
+        ctx.beginPath()
+        ctx.arc(cx + Math.cos(fa) * rr, cy + Math.sin(fa) * rr, 4.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+  })
+}
+
+// Fern frond: rachis along x, alternating pinnae tapering toward the tip.
+function fern(ctx, rand) {
+  clip(ctx, 'fern', (w, h) => {
+    for (let i = 0; i < 26; i++) {
+      const t = i / 26
+      const x = w * (0.04 + t * 0.94)
+      const len = h * 0.46 * Math.sin(Math.PI * (0.12 + t * 0.85))
+      for (const side of [-1, 1]) {
+        ctx.fillStyle = ['#3f7a2c', '#4a8a33', '#356b25'][Math.floor(rand() * 3)]
+        ovatePath(ctx, x + side * 3, h / 2, len, len * 0.26, side * (1.15 - t * 0.3))
+        ctx.fill()
+      }
+    }
+    ctx.strokeStyle = '#2f5a20'
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(0, h / 2)
+    ctx.lineTo(w, h / 2)
+    ctx.stroke()
+  })
+}
+
 let atlas = null
 export function getAtlas() {
   if (atlas) return atlas
@@ -365,6 +451,9 @@ export function getAtlas() {
   frond(ctx, rand)
   coir(ctx, rand)
   trunk(ctx, rand)
+  hibiscus(ctx, rand)
+  lantana(ctx, rand)
+  fern(ctx, rand)
   clip(ctx, 'white', (w, h) => {
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, w, h)

@@ -4,6 +4,8 @@ import { BENCH_GAP, DAISY_DRIFTS, MARIGOLD_DRIFTS, PETUNIA_DRIFTS, drift } from 
 import { PROMENADE, SPOKE_HALF, ZONES, promenade, spokes } from '../world/plan'
 import { QUAY_RADIUS } from '../world/terrain'
 import { petalBands } from '../world/petalPlanting'
+import { PATH_HALF_IN, POND, STREAM_HALF, innerPath, stream, toWorld as wingToWorld } from './wingsong/layout'
+import { LANTERN_PATH_HALF, PLAZA, lanternPath, plazaCenter } from './lantern/layout'
 
 // World-space masks over [-E, E]² on x and z.
 //   mask:  R = no grass (paths, beds, hedges, lake), G = soil (planting beds)
@@ -83,6 +85,23 @@ export function getMasks() {
       strip(m, path, inward * 0.6, inward * 3.1, '#ff0')
     }
   }
+
+  // Wingsong Conservatory interior.
+  for (const side of [-1, 1]) strip(m, innerPath, side * (PATH_HALF_IN + 0.3), side * (PATH_HALF_IN + 2.2), '#ff0', (s) => s < 9, 2)
+  strip(m, innerPath, -PATH_HALF_IN - 0.3, PATH_HALF_IN + 0.3, '#f00', null, 2)
+  strip(m, stream, -STREAM_HALF - 0.5, STREAM_HALF + 0.5, '#f00', null, 2)
+  const pond = wingToWorld(POND.a, POND.l)
+  m.fillStyle = '#f00'
+  m.beginPath()
+  m.arc(...px(pond.x, pond.z), ((POND.r + 0.3) / (2 * MASK_EXTENT)) * RES, 0, Math.PI * 2)
+  m.fill()
+
+  // Lantern Shore path and plaza.
+  strip(m, lanternPath, -LANTERN_PATH_HALF - 0.3, LANTERN_PATH_HALF + 0.3, '#f00', null, 2)
+  const plaza = plazaCenter()
+  m.beginPath()
+  m.arc(...px(plaza.x, plaza.z), ((PLAZA.r + 0.2) / (2 * MASK_EXTENT)) * RES, 0, Math.PI * 2)
+  m.fill()
 
   // --- Far-distance flower carpet colours
   const bc = document.createElement('canvas')

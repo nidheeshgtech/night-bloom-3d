@@ -2,7 +2,13 @@ import * as THREE from 'three'
 import { getAtlas } from './botany/atlas'
 
 // Time uniform for vegetation wind, advanced by the zone lighting rig.
-export const zoneUniforms = { uTime: { value: 0 } }
+export const zoneUniforms = {
+  uTime: { value: 0 },
+  uNight: { value: 0 },
+  uPlayer: { value: new THREE.Vector3(0, -999, 0) },
+  uBurstPos: { value: new THREE.Vector3(0, -999, 0) },
+  uBurstTime: { value: -999 },
+}
 
 let plant = null
 let plantDepth = null

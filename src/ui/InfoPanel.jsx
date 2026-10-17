@@ -2,6 +2,7 @@ import { useGarden } from '../lib/store'
 import { rig } from '../lib/player'
 import { getWorld } from '../lib/world'
 import { SPECIES } from '../lib/species'
+import { BUTTERFLIES } from '../lib/butterflies'
 import Icon from './Icon'
 
 function SculptureCard({ id }) {
@@ -32,6 +33,46 @@ function SculptureCard({ id }) {
           )
         })}
       </ul>
+    </>
+  )
+}
+
+function ButterflyCard({ species }) {
+  const found = useGarden((s) => s.discoveredButterflies)
+  const b = BUTTERFLIES[species]
+  return (
+    <>
+      <p className="eyebrow">
+        <span className="dot" style={{ background: b.color }} /> Butterfly
+      </p>
+      <h2>{b.name}</h2>
+      <p className="latin">{b.latin}</p>
+      <dl className="facts">
+        <div>
+          <dt>Family</dt>
+          <dd>{b.family}</dd>
+        </div>
+        <div>
+          <dt>Wingspan</dt>
+          <dd>{b.wingspan}</dd>
+        </div>
+        <div>
+          <dt>Range</dt>
+          <dd>{b.range}</dd>
+        </div>
+      </dl>
+      <p>{b.note}</p>
+      <p className="fine-print">Shown about 1.8× life size so they're easy to spot.</p>
+      <div className="collection">
+        <p className="label">
+          Butterflies found {found.length} / {BUTTERFLIES.length}
+        </p>
+        <div className="collection-dots">
+          {BUTTERFLIES.map((x, i) => (
+            <span key={x.id} title={found.includes(i) ? x.name : 'Not found yet'} className={found.includes(i) ? 'found' : ''} style={{ '--c': x.color }} />
+          ))}
+        </div>
+      </div>
     </>
   )
 }
@@ -103,7 +144,7 @@ export default function InfoPanel() {
 
   const close = () => (mode === 'inspect' ? rig.back() : useGarden.setState({ selected: null }))
   const body =
-    selected.kind === 'sculpture' ? <SculptureCard id={selected.id} /> : selected.kind === 'zone' ? <ZoneCard id={selected.id} /> : <FlowerCard species={selected.species} />
+    selected.kind === 'sculpture' ? <SculptureCard id={selected.id} /> : selected.kind === 'zone' ? <ZoneCard id={selected.id} /> : selected.kind === 'butterfly' ? <ButterflyCard species={selected.species} /> : <FlowerCard species={selected.species} />
 
   return (
     <aside className="panel" aria-live="polite">

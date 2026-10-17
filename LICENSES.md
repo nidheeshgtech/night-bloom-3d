@@ -11,6 +11,7 @@ existing garden or attraction. All sculptures, layouts and installations are ori
 | `public/assets/textures/herringbone_pavement/*` (2k) | [Poly Haven](https://polyhaven.com/a/herringbone_pavement) | Poly Haven | CC0 1.0 | Path paving. |
 | `public/assets/textures/grass_ground/*` (1k) | [Poly Haven](https://polyhaven.com/a/grass_ground) | Poly Haven | CC0 1.0 | Lawn base, tinted greener in the shader. |
 | `public/assets/textures/farm_soil/*` (1k) | [Poly Haven](https://polyhaven.com/a/farm_soil) | Poly Haven | CC0 1.0 | Bed soil. |
+| `public/assets/textures/mossy_rock/*` (1k) | [Poly Haven](https://polyhaven.com/a/mossy_rock) | Rob Tuytel | CC0 1.0 | Stream and grotto boulders (Wingsong Conservatory). |
 | `public/assets/textures/white_sandstone_bricks/*` (1k) | [Poly Haven](https://polyhaven.com/a/white_sandstone_bricks) | Poly Haven | CC0 1.0 | Path kerb stones. |
 
 CC0 places no conditions on use, including commercial use. Attribution above is a courtesy and
@@ -24,6 +25,9 @@ for traceability. Check the asset pages again before publishing in case anything
   in `src/zone/botany/atlas.js`.
 - Arcade, baskets, hedges, shrubs, trees, palms, lamps, bench and pots: procedural geometry in
   `src/zone/`.
+- Hibiscus, lantana, fern and alocasia plants; butterfly wing patterns (drawn from general field-guide
+  descriptions of each species, not traced from photographs); Seed Lanterns, Light Reeds and Moon
+  Lilies: all generated in code in `src/zone/`.
 - Ambient audio: synthesised with the Web Audio API in `src/lib/audio.js`.
 
 ## Reference images

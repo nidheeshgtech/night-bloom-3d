@@ -104,3 +104,78 @@ export function treeGeometry(seed) {
   }
   return b.toGeometry()
 }
+
+// Hibiscus shrub: leafy shell with open flowers dotted over it. Returns geometry + heads.
+// Linear-space flower colours: red, coral, pink, golden yellow.
+const HIBISCUS_COLORS = [[0.85, 0.04, 0.06], [0.95, 0.25, 0.12], [0.95, 0.2, 0.45], [0.98, 0.7, 0.08]]
+
+export function hibiscusShrub(seed, hibiscusBloom, facing) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  b.grid(6, 10, (i, j) => {
+    const e = (i / 6) * Math.PI - Math.PI / 2
+    const a = (j / 10) * Math.PI * 2
+    return { p: V(Math.cos(e) * Math.cos(a) * 0.7, 0.85 + Math.sin(e) * 0.7, Math.cos(e) * Math.sin(a) * 0.7), c: CORE }
+  })
+  const heads = []
+  for (let i = 0; i < 130; i++) {
+    const e = Math.asin(rand() * 2 - 1) * 0.9
+    const a = rand() * Math.PI * 2
+    const n = V(Math.cos(e) * Math.cos(a), Math.sin(e), Math.cos(e) * Math.sin(a))
+    card(b, n.clone().multiplyScalar(0.74 + rand() * 0.18).add(V(0, 0.85, 0)), n.clone().add(V(0, 0.2, 0)).normalize(), 0.5, 'foliage', tone(rand), rand)
+  }
+  const color = HIBISCUS_COLORS[seed % HIBISCUS_COLORS.length]
+  for (let i = 0; i < 22; i++) {
+    const e = 0.1 + rand() * 1.1
+    const a = rand() * Math.PI * 2
+    const n = V(Math.cos(e) * Math.cos(a), Math.sin(e), Math.cos(e) * Math.sin(a))
+    const p = n.clone().multiplyScalar(0.88).add(V(0, 0.85, 0))
+    hibiscusBloom(b, facing(p, n.clone().add(V(0, 0.3, 0)), rand() * 6, 1.5), { rand, color })
+    heads.push(p)
+  }
+  return { geometry: b.toGeometry(), heads }
+}
+
+// Lantana shrub: cards painted with flower umbels; heads are card centres on the upper half.
+export function lantanaShrub(seed) {
+  const b = new Builder()
+  const rand = mulberry32(seed)
+  b.grid(5, 9, (i, j) => {
+    const e = (i / 5) * Math.PI - Math.PI / 2
+    const a = (j / 9) * Math.PI * 2
+    return { p: V(Math.cos(e) * Math.cos(a) * 0.55, 0.55 + Math.sin(e) * 0.45, Math.cos(e) * Math.sin(a) * 0.55), c: CORE }
+  })
+  const heads = []
+  for (let i = 0; i < 110; i++) {
+    const e = Math.asin(rand() * 2 - 1) * 0.85
+    const a = rand() * Math.PI * 2
+    const n = V(Math.cos(e) * Math.cos(a), Math.sin(e) * 0.8, Math.cos(e) * Math.sin(a)).normalize()
+    const p = V(n.x * 0.6, 0.55 + n.y * 0.5, n.z * 0.6)
+    card(b, p, n.clone().add(V(0, 0.4, 0)).normalize(), 0.42, 'lantana', tone(rand), rand)
+    if (n.y > 0.25 && heads.length < 14) heads.push(p)
+  }
+  return { geometry: b.toGeometry(), heads }
+}
+
+// Boulder: noise-displaced icosphere with box-projected UVs.
+export function rockGeometry(seed) {
+  const rand = mulberry32(seed)
+  const g = new THREE.IcosahedronGeometry(1, 3)
+  const pos = g.attributes.position
+  const k = [rand() * 6, rand() * 6, rand() * 6]
+  const uvs = []
+  for (let i = 0; i < pos.count; i++) {
+    const v = new THREE.Vector3().fromBufferAttribute(pos, i)
+    const n =
+      0.18 * Math.sin(v.x * 2.1 + k[0]) * Math.cos(v.y * 1.7 + k[1]) +
+      0.1 * Math.sin(v.z * 3.3 + k[2]) +
+      0.06 * Math.sin((v.x + v.y + v.z) * 5.1)
+    v.multiplyScalar(1 + n)
+    v.y *= 0.62
+    pos.setXYZ(i, v.x, v.y, v.z)
+    uvs.push(v.x * 0.5 + v.z * 0.5, v.y * 0.5 + v.z * 0.3)
+  }
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
+  g.computeVertexNormals()
+  return g
+}

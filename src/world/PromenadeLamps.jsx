@@ -8,15 +8,17 @@ import { bulbMat, metalMat } from '../zone/materials'
 // the lake ring reads at night without adding per-pixel lighting cost.
 const COUNT = 36
 
+// Lamp angles around the ring, keeping spoke mouths clear.
+export const LAMP_ANGLES = Array.from({ length: COUNT }, (_, i) => (i / COUNT) * Math.PI * 2 + Math.PI / COUNT).filter(
+  (a) => !ZONES.some((z) => Math.abs(Math.atan2(Math.sin(a - z.a), Math.cos(a - z.a))) < 0.06),
+)
+
 export default function PromenadeLamps() {
   const { posts, heads } = useMemo(() => {
     const r = PROMENADE.radius + PROMENADE.half + 0.6
     const posts = []
     const heads = []
-    for (let i = 0; i < COUNT; i++) {
-      const a = (i / COUNT) * Math.PI * 2 + Math.PI / COUNT
-      // Keep spoke mouths clear.
-      if (ZONES.some((z) => Math.abs(Math.atan2(Math.sin(a - z.a), Math.cos(a - z.a))) < 0.06)) continue
+    for (const a of LAMP_ANGLES) {
       const x = Math.cos(a) * r
       const z = Math.sin(a) * r
       const y = heightAt(x, z)

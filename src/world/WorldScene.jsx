@@ -10,31 +10,51 @@ import TreeBelts from './TreeBelts'
 import Gates from './Gates'
 import ZoneMarkers from './ZoneMarkers'
 import PromenadeLamps from './PromenadeLamps'
+import LakeReflections from './LakeReflections'
 import { ZONES } from './plan'
 
-// Zone content modules, code-split and mounted only when the camera is within range.
-// Zones without content yet show their gate, hedges and borders only.
+// Zone content, code-split. Landmarks (structures visible from the air) are always mounted;
+// details (planting, creatures, interiors) mount only when the camera is within range.
 const CONTENT = {
-  bloom: { load: lazy(() => import('../zone/BloomZone')), radius: Infinity },
+  bloom: { detail: lazy(() => import('../zone/BloomZone')), radius: Infinity },
+  wingsong: {
+    landmark: lazy(() => import('../zone/wingsong/Glasshouse')),
+    detail: lazy(() => import('../zone/wingsong/WingsongDetail')),
+    radius: 120,
+  },
+  lantern: {
+    landmark: lazy(() => import('../zone/lantern/LanternLandmark')),
+    detail: lazy(() => import('../zone/lantern/LanternDetail')),
+    radius: 120,
+  },
+}
+
+function InRange({ zone, radius, children }) {
+  const [active, setActive] = useState(radius === Infinity)
+  const last = useRef(-1)
+  useFrame(({ camera, clock }) => {
+    if (radius === Infinity || clock.elapsedTime - last.current < 0.5) return
+    last.current = clock.elapsedTime
+    const d = camera.position.distanceTo(zone.center)
+    // Hysteresis so a zone doesn't flicker in and out at the boundary.
+    if (!active && d < radius) setActive(true)
+    else if (active && d > radius * 1.2) setActive(false)
+  })
+  return active ? children : null
 }
 
 function ZoneContent({ zone }) {
   const entry = CONTENT[zone.id]
-  const [active, setActive] = useState(entry?.radius === Infinity)
-  const last = useRef(0)
-  useFrame(({ camera, clock }) => {
-    if (!entry || entry.radius === Infinity || clock.elapsedTime - last.current < 0.5) return
-    last.current = clock.elapsedTime
-    const d = camera.position.distanceTo(zone.center)
-    // Hysteresis so a zone doesn't flicker in and out at the boundary.
-    if (!active && d < entry.radius) setActive(true)
-    else if (active && d > entry.radius * 1.2) setActive(false)
-  })
-  if (!entry || !active) return null
-  const Content = entry.load
+  if (!entry) return null
+  const { landmark: Landmark, detail: Detail, radius } = entry
   return (
     <Suspense fallback={null}>
-      <Content />
+      {Landmark && <Landmark />}
+      {Detail && (
+        <InRange zone={zone} radius={radius}>
+          <Detail />
+        </InRange>
+      )}
     </Suspense>
   )
 }
@@ -51,6 +71,7 @@ export default function WorldScene() {
       <TreeBelts />
       <Gates />
       <PromenadeLamps />
+      <LakeReflections />
       {ZONES.map((z) => (
         <ZoneContent key={z.id} zone={z} />
       ))}

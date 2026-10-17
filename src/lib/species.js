@@ -61,6 +61,16 @@ export const SPECIES = [
     note: "Also called bachelor's button. Its petals are edible.",
     color: '#4fc3ff',
   },
+  {
+    id: 'daisy',
+    name: 'African Daisy',
+    latin: 'Osteospermum ecklonis',
+    family: 'Asteraceae',
+    origin: 'South Africa',
+    season: 'Cool season, roughly Oct–Apr in the Gulf',
+    note: 'The flowers open in sunshine and close at dusk or under heavy cloud. The blue-violet centre is typical of the species.',
+    color: '#f4f1ff',
+  },
 ]
 
 export const speciesColor = (id) => new THREE.Color(SPECIES.find((s) => s.id === id).color)

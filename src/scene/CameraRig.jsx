@@ -6,19 +6,17 @@ import gsap from 'gsap'
 import { useGarden } from '../lib/store'
 import { input, player, rig } from '../lib/player'
 import { shared } from '../lib/flowerMaterial'
-import { heightAt, ISLAND_RADIUS, PATH_RADIUS } from '../lib/terrain'
-import { COLLIDERS, SCULPTURES } from '../lib/sculptures'
+import { getWorld } from '../lib/world'
 
 const EYE = 1.7
 const WALK_SPEED = 4
 const RUN_SPEED = 8
-const AERIAL_TARGET = new THREE.Vector3(0, 2, 0)
-const SPAWN_ANGLE = -1.05 // just before the tunnel, facing into it
 
 const forward = (yaw, pitch) =>
   new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch))
 
 export default function CameraRig() {
+  const world = getWorld()
   const mode = useGarden((s) => s.mode)
   const camera = useThree((s) => s.camera)
   const controls = useRef()
@@ -28,8 +26,9 @@ export default function CameraRig() {
 
   useEffect(() => {
     camera.rotation.order = 'YXZ'
-    controls.current.target.copy(AERIAL_TARGET)
-  }, [camera])
+    controls.current.target.copy(world.aerial.target)
+    if (import.meta.env.DEV && window.__garden) window.__garden.camera = camera
+  }, [camera, world])
 
   useEffect(() => {
     const set = useGarden.setState
@@ -84,12 +83,8 @@ export default function CameraRig() {
     }
 
     rig.enter = () => {
-      const a = SPAWN_ANGLE
-      const pos = new THREE.Vector3(Math.cos(a) * PATH_RADIUS, 0, Math.sin(a) * PATH_RADIUS)
-      pos.y = heightAt(pos.x, pos.z) + EYE
-      const fwd = new THREE.Vector3(-Math.sin(a), 0, Math.cos(a))
-      const yaw = Math.atan2(-fwd.x, -fwd.z)
-      fly(pos, pos.clone().addScaledVector(fwd, 10), {
+      const { pos, yaw } = world.spawn
+      fly(pos.clone(), pos.clone().add(forward(yaw, 0).multiplyScalar(10)), {
         duration: 3.4,
         arc: 12,
         onDone: () => startWalk(pos, yaw, 0),
@@ -98,16 +93,17 @@ export default function CameraRig() {
 
     rig.toAerial = () => {
       set({ selected: null })
-      const dir = camera.position.clone().setY(0)
+      const { target, distance, height } = world.aerial
+      const dir = camera.position.clone().sub(target).setY(0)
       if (dir.lengthSq() < 1) dir.set(1, 0, 1)
-      const pos = dir.normalize().multiplyScalar(80).setY(48)
-      fly(pos, AERIAL_TARGET, { duration: 3, onDone: () => toOrbit(AERIAL_TARGET, 'aerial') })
+      const pos = target.clone().addScaledVector(dir.normalize(), distance).setY(height)
+      fly(pos, target, { duration: 3, onDone: () => toOrbit(target, 'aerial') })
     }
 
     rig.inspect = (id) => {
       const m = useGarden.getState().mode
       if (m === 'flying') return
-      const s = SCULPTURES.find((sc) => sc.id === id)
+      const s = world.sculptures.find((sc) => sc.id === id)
       if (m !== 'inspect') {
         memory.current =
           m === 'walk'
@@ -142,7 +138,7 @@ export default function CameraRig() {
     }
 
     return () => tween.current?.kill()
-  }, [camera])
+  }, [camera, world])
 
   useEffect(() => {
     const down = (e) => {
@@ -187,13 +183,8 @@ export default function CameraRig() {
     let nx = player.pos.x + (-sin * mz + cos * mx) * speed
     let nz = player.pos.z + (-cos * mz - sin * mx) * speed
 
-    const r = Math.hypot(nx, nz)
-    const maxR = ISLAND_RADIUS - 5
-    if (r > maxR) {
-      nx *= maxR / r
-      nz *= maxR / r
-    }
-    for (const c of COLLIDERS) {
+    ;[nx, nz] = world.clamp(nx, nz)
+    for (const c of world.colliders) {
       const dx = nx - c.x
       const dz = nz - c.z
       const d = Math.hypot(dx, dz)
@@ -205,7 +196,7 @@ export default function CameraRig() {
 
     player.pos.x = nx
     player.pos.z = nz
-    player.pos.y += (heightAt(nx, nz) + EYE - player.pos.y) * Math.min(1, dt * 10)
+    player.pos.y += (world.heightAt(nx, nz) + EYE - player.pos.y) * Math.min(1, dt * 10)
     const bob = len > 0.01 ? Math.sin(clock.elapsedTime * 9) * 0.03 : 0
     camera.position.set(nx, player.pos.y + bob, nz)
     camera.rotation.set(player.pitch, player.yaw, 0)
@@ -223,8 +214,8 @@ export default function CameraRig() {
       enableDamping
       dampingFactor={0.06}
       enablePan={false}
-      minDistance={mode === 'inspect' ? 5 : 12}
-      maxDistance={mode === 'inspect' ? 50 : 170}
+      minDistance={mode === 'inspect' ? 4 : world.orbit.min}
+      maxDistance={mode === 'inspect' ? 50 : world.orbit.max}
       maxPolarAngle={mode === 'inspect' ? Math.PI / 2 - 0.02 : Math.PI / 2 - 0.08}
     />
   )

@@ -3,8 +3,7 @@ import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useGarden } from '../lib/store'
 import { player, rig } from '../lib/player'
-import { SCULPTURES } from '../lib/sculptures'
-import { FLOWERS, FLOWER_COUNT } from '../lib/flowers'
+import { getWorld } from '../lib/world'
 
 const CLICK_SLOP = 6
 const FLOWER_REACH = 30
@@ -24,6 +23,8 @@ export default function Interaction() {
     const pt = new THREE.Vector3()
     const pointers = new Map()
 
+    const world = getWorld()
+
     const pick = (cx, cy) => {
       const rect = el.getBoundingClientRect()
       ndc.set(((cx - rect.left) / rect.width) * 2 - 1, -((cy - rect.top) / rect.height) * 2 + 1)
@@ -31,7 +32,7 @@ export default function Interaction() {
       const ray = raycaster.ray
       let best = null
 
-      for (const s of SCULPTURES) {
+      for (const s of world.sculptures) {
         for (const [x, y, z, r] of s.pick) {
           sphere.center.set(x, y, z)
           sphere.radius = r
@@ -43,13 +44,15 @@ export default function Interaction() {
         }
       }
 
-      const h = FLOWERS.heads
-      const count = FLOWER_COUNT[useGarden.getState().quality]
+      const h = world.flowers.heads
+      const count = world.flowers.count()
+      // Tolerance grows with distance so it behaves like a few pixels on screen.
+      const base = world.pickRadius ?? Math.sqrt(FLOWER_HIT_SQ)
       for (let i = 0; i < count; i++) {
         pt.set(h[i * 3], h[i * 3 + 1], h[i * 3 + 2])
         const d = pt.distanceTo(ray.origin)
         if (d > FLOWER_REACH || (best && d > best.d)) continue
-        if (ray.distanceSqToPoint(pt) < FLOWER_HIT_SQ) best = { d, kind: 'flower', index: i }
+        if (ray.distanceSqToPoint(pt) < (base + d * 0.012) ** 2) best = { d, kind: 'flower', index: i }
       }
       return best
     }
@@ -90,7 +93,7 @@ export default function Interaction() {
         rig.inspect(result.id)
         return
       }
-      const species = FLOWERS.species[result.index]
+      const species = world.flowers.species[result.index]
       st.set({
         selected: { kind: 'flower', index: result.index, species },
         discovered: st.discovered.includes(species) ? st.discovered : [...st.discovered, species],

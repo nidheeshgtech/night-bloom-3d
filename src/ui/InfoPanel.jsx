@@ -1,14 +1,14 @@
 import { useGarden } from '../lib/store'
 import { rig } from '../lib/player'
-import { SCULPTURES } from '../lib/sculptures'
+import { getWorld } from '../lib/world'
 import { SPECIES } from '../lib/species'
 import Icon from './Icon'
 
 function SculptureCard({ id }) {
-  const s = SCULPTURES.find((sc) => sc.id === id)
+  const s = getWorld().sculptures.find((sc) => sc.id === id)
   return (
     <>
-      <p className="eyebrow">Concept sculpture</p>
+      <p className="eyebrow">{s.kind || 'Concept sculpture'}</p>
       <h2>{s.name}</h2>
       <p className="tagline">{s.tagline}</p>
       <p>{s.description}</p>
@@ -39,6 +39,8 @@ function SculptureCard({ id }) {
 function FlowerCard({ species }) {
   const discovered = useGarden((s) => s.discovered)
   const sp = SPECIES[species]
+  const ids = getWorld().speciesIds
+  const found = ids.filter((i) => discovered.includes(i)).length
   return (
     <>
       <p className="eyebrow">
@@ -63,19 +65,19 @@ function FlowerCard({ species }) {
       <p>{sp.note}</p>
       <div className="collection">
         <p className="label">
-          Species found {discovered.length} / {SPECIES.length}
+          Species found {found} / {ids.length}
         </p>
         <div className="collection-dots">
-          {SPECIES.map((s, i) => (
+          {ids.map((i) => (
             <span
-              key={s.id}
-              title={discovered.includes(i) ? s.name : 'Not found yet'}
+              key={SPECIES[i].id}
+              title={discovered.includes(i) ? SPECIES[i].name : 'Not found yet'}
               className={discovered.includes(i) ? 'found' : ''}
-              style={{ '--c': s.color }}
+              style={{ '--c': SPECIES[i].color }}
             />
           ))}
         </div>
-        {discovered.length === SPECIES.length && <p className="tagline">You found every species in the garden.</p>}
+        {found === ids.length && <p className="tagline">You found every species in the garden.</p>}
       </div>
     </>
   )

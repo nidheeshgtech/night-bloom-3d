@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useGarden, usePerf } from '../lib/store'
 import { rig } from '../lib/player'
 import { audio } from '../lib/audio'
-import { SCULPTURES } from '../lib/sculptures'
+import { getWorld } from '../lib/world'
 import { capturePhoto } from './capture'
 import InfoPanel from './InfoPanel'
 import Joystick from './Joystick'
@@ -106,7 +106,7 @@ export default function Hud() {
       <div className="dock">
         {canTravel && (
           <div className="travel">
-            {SCULPTURES.map((s) => (
+            {getWorld().sculptures.map((s) => (
               <button key={s.id} className="chip" onClick={() => rig.inspect(s.id)}>
                 {s.name}
               </button>

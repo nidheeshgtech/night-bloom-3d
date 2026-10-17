@@ -152,6 +152,18 @@ function carpets(ctx, paintFor) {
   }
 }
 
+const WALK_RES = 1024
+let walkData = null
+
+// True where the ground is a flower bed or hedge (not walkable).
+export function isBlocked(x, z) {
+  if (!walkData) getMasks()
+  const u = Math.floor(((x + MASK_EXTENT) / (2 * MASK_EXTENT)) * WALK_RES)
+  const v = Math.floor(((z + MASK_EXTENT) / (2 * MASK_EXTENT)) * WALK_RES)
+  if (u < 0 || v < 0 || u >= WALK_RES || v >= WALK_RES) return false
+  return walkData[(v * WALK_RES + u) * 4 + 1] > 110
+}
+
 let textures = null
 export function getMasks() {
   if (textures) return textures
@@ -172,13 +184,14 @@ export function getMasks() {
   for (const side of [-1, 1]) {
     const gap = side === -1 ? benchGap : null
     strip(m, avenue, side * (BED_IN - 0.05), side * (BED_OUT + 0.05), '#ff0', gap, 2)
-    strip(m, avenue, side * BED_OUT, side * (HEDGE_OUT + 0.1), '#f00', gap, 2)
+    // Hedges share the soil channel so the walk map treats them like beds (not walkable).
+    strip(m, avenue, side * BED_OUT, side * (HEDGE_OUT + 0.1), '#ff0', gap, 2)
     strip(m, avenue, 0, side * (PATH_HALF + 0.3), '#f00', null, 2)
   }
   strip(m, avenue, 0, -(BED_OUT - 0.5), '#f00', (s) => s < BENCH_GAP[0] + 0.4 || s > BENCH_GAP[1] - 0.4, 2)
   for (const z of ZONES) {
     for (const { path, inward } of z.sides) {
-      strip(m, path, -0.5, 0.5, '#f00')
+      strip(m, path, -0.6, 0.6, '#ff0')
       strip(m, path, inward * 0.6, inward * 3.1, '#ff0')
     }
   }
@@ -216,6 +229,13 @@ export function getMasks() {
   for (const pb of petalBands) band(b, pb.path, pb.d0, pb.d1, pb.colorAt)
   carpets(b, (design) => (i) => design.colors[i % design.colors.length])
   for (const p of herbBloomPolys()) poly(b, p.pts, p.fill)
+
+  // Downsampled copy for CPU walkability queries (G channel = beds and hedges).
+  const wc = document.createElement('canvas')
+  wc.width = wc.height = WALK_RES
+  const wctx = wc.getContext('2d', { willReadFrequently: true })
+  wctx.drawImage(mc, 0, 0, WALK_RES, WALK_RES)
+  walkData = wctx.getImageData(0, 0, WALK_RES, WALK_RES).data
 
   const mask = new THREE.CanvasTexture(mc)
   mask.colorSpace = THREE.NoColorSpace

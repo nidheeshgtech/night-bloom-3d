@@ -4,14 +4,18 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { useGarden } from '../lib/store'
-import { input, player, rig } from '../lib/player'
+import { player, rig } from '../lib/player'
 import { shared } from '../lib/flowerMaterial'
 import { audio } from '../lib/audio'
+import { findPath } from '../lib/nav'
 import { getWorld } from '../lib/world'
 
 const EYE = 1.7
 const WALK_SPEED = 4
 const RUN_SPEED = 8
+const AUTO_SPEED = 3.8 // Street View-style glide speed, m/s
+const WALK_PITCH = -0.1 // slight downward look so the path and its arrows are in view
+const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b))
 
 const forward = (yaw, pitch) =>
   new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch))
@@ -47,6 +51,7 @@ export default function CameraRig() {
     // Quadratic-bezier camera flight with the look target lerped alongside.
     const fly = (toPos, toLook, { duration = 2.6, arc = 0, onDone }) => {
       tween.current?.kill()
+      player.auto = null
       const fromPos = camera.position.clone()
       const fromLook = currentLook()
       const mid = fromPos.clone().lerp(toPos, 0.5)
@@ -90,10 +95,10 @@ export default function CameraRig() {
       const zone = world.zones?.find((z) => z.id === useGarden.getState().focus)
       const { pos, yaw } = zone ? zone.spawn : world.spawn
       set({ selected: null })
-      fly(pos.clone(), pos.clone().add(forward(yaw, 0).multiplyScalar(10)), {
+      fly(pos.clone(), pos.clone().add(forward(yaw, WALK_PITCH).multiplyScalar(10)), {
         duration: 3.4,
         arc: 12,
-        onDone: () => startWalk(pos, yaw, 0),
+        onDone: () => startWalk(pos, yaw, WALK_PITCH),
       })
     }
 
@@ -106,6 +111,22 @@ export default function CameraRig() {
       const pos = target.clone().addScaledVector(out, -58).setY(target.y + 42)
       set({ focus: id, selected: { kind: 'zone', id } })
       fly(pos, target, { duration: 2.6, arc: 10, onDone: () => toOrbit(target, 'aerial') })
+    }
+
+    // Street View-style move: route to (x, z) around obstacles, then glide along it.
+    rig.walkTo = (x, z, snap = 2.5) => {
+      if (useGarden.getState().mode !== 'walk') return false
+      const route = findPath(world, player.pos.x, player.pos.z, x, z, snap)
+      if (!route) return false
+      const pts = route.map(([px, pz]) => new THREE.Vector3(px, 0, pz))
+      const curve = pts.length === 2 ? new THREE.LineCurve3(pts[0], pts[1]) : new THREE.CatmullRomCurve3(pts, false, 'centripetal')
+      const length = curve.getLength()
+      if (length < 0.3) return false
+      const dir = pts[1].clone().sub(pts[0])
+      // Moving roughly forward turns the view with the walk; sideways and backward moves keep it.
+      const forward = Math.abs(angleDiff(Math.atan2(-dir.x, -dir.z), player.yaw)) < 0.9
+      player.auto = { curve, length, s: 0, v: 0, forward }
+      return true
     }
 
     // Hands-off cinematic tour along the world's tour segments.
@@ -239,49 +260,70 @@ export default function CameraRig() {
     }
     const dt = Math.min(delta, 0.05)
     const k = keys.current
-    let mx = (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0) + input.move.x
-    let mz = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0) + input.move.y
+    let mx = (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0)
+    let mz = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0)
     const len = Math.hypot(mx, mz)
     if (len > 1) {
       mx /= len
       mz /= len
     }
-    const speed = (k.ShiftLeft || k.ShiftRight ? RUN_SPEED : WALK_SPEED) * dt
-    const sin = Math.sin(player.yaw)
-    const cos = Math.cos(player.yaw)
-    let nx = player.pos.x + (-sin * mz + cos * mx) * speed
-    let nz = player.pos.z + (-cos * mz - sin * mx) * speed
-
-    ;[nx, nz] = world.clamp(nx, nz)
-    // Walls: push out of any segment closer than the body radius.
-    for (const [ax, az, bx, bz] of world.walls || []) {
-      const ex = bx - ax
-      const ez = bz - az
-      const t = Math.max(0, Math.min(1, ((nx - ax) * ex + (nz - az) * ez) / (ex * ex + ez * ez || 1)))
-      const cx = ax + ex * t
-      const cz = az + ez * t
-      const dx = nx - cx
-      const dz = nz - cz
-      const d = Math.hypot(dx, dz)
-      if (d < 0.35 && d > 1e-6) {
-        nx = cx + (dx / d) * 0.35
-        nz = cz + (dz / d) * 0.35
+    if (len > 0.01) player.auto = null
+    let nx
+    let nz
+    const auto = player.auto
+    if (auto) {
+      // Ease in, cruise, ease out to stop exactly at the destination.
+      const remain = auto.length - auto.s
+      const vmax = Math.min(AUTO_SPEED, Math.sqrt(2 * 3 * Math.max(remain, 0)) + 0.15)
+      auto.v = Math.min(vmax, auto.v + 4.5 * dt)
+      auto.s = Math.min(auto.length, auto.s + auto.v * dt)
+      const p = auto.curve.getPointAt(auto.s / auto.length)
+      nx = p.x
+      nz = p.z
+      if (auto.forward && !player.dragging) {
+        const tan = auto.curve.getTangentAt(Math.min(0.999, auto.s / auto.length))
+        player.yaw += angleDiff(Math.atan2(-tan.x, -tan.z), player.yaw) * Math.min(1, dt * 2.5)
+        player.pitch += (WALK_PITCH - player.pitch) * Math.min(1, dt * 1.5)
       }
-    }
-    for (const c of world.colliders) {
-      const dx = nx - c.x
-      const dz = nz - c.z
-      const d = Math.hypot(dx, dz)
-      if (d < c.r) {
-        nx = c.x + (dx / d) * c.r
-        nz = c.z + (dz / d) * c.r
+      if (auto.s >= auto.length - 1e-3) player.auto = null
+    } else {
+      const speed = (k.ShiftLeft || k.ShiftRight ? RUN_SPEED : WALK_SPEED) * dt
+      const sin = Math.sin(player.yaw)
+      const cos = Math.cos(player.yaw)
+      nx = player.pos.x + (-sin * mz + cos * mx) * speed
+      nz = player.pos.z + (-cos * mz - sin * mx) * speed
+
+      ;[nx, nz] = world.clamp(nx, nz)
+      // Walls: push out of any segment closer than the body radius.
+      for (const [ax, az, bx, bz] of world.walls || []) {
+        const ex = bx - ax
+        const ez = bz - az
+        const t = Math.max(0, Math.min(1, ((nx - ax) * ex + (nz - az) * ez) / (ex * ex + ez * ez || 1)))
+        const cx = ax + ex * t
+        const cz = az + ez * t
+        const dx = nx - cx
+        const dz = nz - cz
+        const d = Math.hypot(dx, dz)
+        if (d < 0.35 && d > 1e-6) {
+          nx = cx + (dx / d) * 0.35
+          nz = cz + (dz / d) * 0.35
+        }
+      }
+      for (const c of world.colliders) {
+        const dx = nx - c.x
+        const dz = nz - c.z
+        const d = Math.hypot(dx, dz)
+        if (d < c.r) {
+          nx = c.x + (dx / d) * c.r
+          nz = c.z + (dz / d) * c.r
+        }
       }
     }
 
     player.pos.x = nx
     player.pos.z = nz
     player.pos.y += (world.heightAt(nx, nz) + EYE - player.pos.y) * Math.min(1, dt * 10)
-    const bob = len > 0.01 ? Math.sin(clock.elapsedTime * 9) * 0.03 : 0
+    const bob = len > 0.01 || auto ? Math.sin(clock.elapsedTime * 9) * 0.03 : 0
     camera.position.set(nx, player.pos.y + bob, nz)
     camera.rotation.set(player.pitch, player.yaw, 0)
     shared.uPlayer.value.set(nx, 0, nz)

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { withNightLight } from '../zone/nightlight'
 
 // Traditional Islamic geometric patterns, drawn in code (no external artwork).
 
@@ -100,11 +101,11 @@ function rosetteTexture() {
 
 let rosetteMat = null
 export function rosetteMaterial() {
-  return (rosetteMat ??= new THREE.MeshStandardMaterial({
+  return (rosetteMat ??= withNightLight(new THREE.MeshStandardMaterial({
     map: rosetteTexture(),
     roughness: 0.85,
     polygonOffset: true,
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
-  }))
+  })))
 }

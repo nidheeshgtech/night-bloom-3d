@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { QUAY_RADIUS, WATER_LEVEL, heightAt } from './terrain'
 import { pbrSet, zoneUniforms } from '../zone/materials'
+import { withNightLight } from '../zone/nightlight'
 
 // Tileable ripple normal map from integer-frequency sine waves.
 export function rippleTexture() {
@@ -79,6 +80,8 @@ export default function Lake() {
     const ripple = rippleTexture()
     const water = new THREE.MeshStandardMaterial({
       color: '#0d3540',
+      emissive: '#123a66',
+      emissiveIntensity: 0,
       roughness: 0.04,
       metalness: 0.15,
       normalMap: ripple,
@@ -106,12 +109,13 @@ export default function Lake() {
         )
     }
     const t = pbrSet('white_sandstone_bricks', 1)
-    const wall = new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#d9cdb9', side: THREE.DoubleSide })
+    const wall = withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#d9cdb9', side: THREE.DoubleSide }))
     return { water, wall, ripple }
   }, [])
   const quay = useMemo(quayGeometry, [])
 
   useFrame((_, dt) => {
+    water.emissiveIntensity = zoneUniforms.uNight.value * 0.28
     ripple.offset.x += dt * 0.004
     ripple.offset.y += dt * 0.0025
   })

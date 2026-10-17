@@ -8,6 +8,12 @@ import { WORLD_RADIUS, ZONES, spokes } from './plan'
 import { petalBeds } from './petalPlanting'
 import { PROMENADE_PALMS, TREES } from './TreeBelts'
 import { buildTour } from './tour'
+import { isBlocked } from '../zone/mask'
+import { makePath } from './pathlib'
+import { PROMENADE, SPOKE_HALF, promenade } from './plan'
+import { PATH_HALF, avenue } from '../zone/layout'
+import { PATH_HALF_IN, innerPath } from '../zone/wingsong/layout'
+import { LANTERN_PATH_HALF, lanternPath } from '../zone/lantern/layout'
 import { PAVILIONS } from './Pavilions'
 import { HERB_FEATURES } from '../zone/herbarium/features'
 import { HERB_WALLS, PAV_CORNERS, C as HERB_C, toWorld as herbToWorld } from '../zone/herbarium/layout'
@@ -84,6 +90,7 @@ const sculptures = [
   {
     id: 'border',
     zone: 'bloom',
+    pickBias: -3, // its pick zones sit over the beds; individual flowers win
     kind: 'Planting design',
     name: 'The Long Border',
     tagline: 'Three-tier bedding along the garden walk',
@@ -267,6 +274,8 @@ export const bloomWorld = {
     ...[1, 3, 5, 7].map((k) => ({ ...xz(herbToWorld(HERB_C + Math.cos((k * Math.PI) / 4) * 4.7, Math.sin((k * Math.PI) / 4) * 4.7)), r: 0.25 })),
   ],
   walls: [...WALLS, ...HERB_WALLS],
+  blockedAt: isBlocked,
+  walkPaths: buildWalkPaths(),
   zones,
   sculptures,
   flowers: { heads, species, count: () => species.length },
@@ -278,4 +287,23 @@ export const bloomWorld = {
   camera: { position: [0, 165, 247], far: 1600 },
   orbit: { min: 12, max: 380 },
   tour: buildTour,
+}
+
+// Paved routes used for Street View-style direction arrows.
+function buildWalkPaths() {
+  const herb = (pts, opts) => makePath(pts.map(([R, l]) => { const p = herbToWorld(R, l); return [p.x, p.z] }), opts)
+  const edge = (R0, l0, R1, l1) => Array.from({ length: 9 }, (_, i) => [R0 + ((R1 - R0) * i) / 8, l0 + ((l1 - l0) * i) / 8])
+  const ring = [...edge(81.2, -18.8, 118.8, -18.8), ...edge(118.8, -18.8, 118.8, 18.8).slice(1), ...edge(118.8, 18.8, 81.2, 18.8).slice(1), ...edge(81.2, 18.8, 81.2, -18.8).slice(1, -1)]
+  return [
+    { path: promenade, half: PROMENADE.half },
+    ...spokes.map((path) => ({ path, half: SPOKE_HALF })),
+    { path: avenue, half: PATH_HALF },
+    { path: innerPath, half: PATH_HALF_IN },
+    { path: lanternPath, half: LANTERN_PATH_HALF },
+    { path: herb([[64.5, 0], [80, 0], [94.5, 0]], { step: 0.25 }), half: 2.2 },
+    { path: herb([[105.5, 0], [114, 0], [123, 0]], { step: 0.25 }), half: 2.2 },
+    { path: herb([[HERB_C, -18.8], [HERB_C, -11], [HERB_C, -5.2]], { step: 0.25 }), half: 2.2 },
+    { path: herb([[HERB_C, 5.2], [HERB_C, 11], [HERB_C, 18.8]], { step: 0.25 }), half: 2.2 },
+    { path: herb(ring, { closed: true, step: 0.25 }), half: 1.2 },
+  ]
 }

@@ -5,12 +5,16 @@ import { useGarden } from '../lib/store'
 import { player, rig } from '../lib/player'
 import { getWorld } from '../lib/world'
 import { allPickers } from '../lib/picking'
+import { MAX_WALK, groundHit } from '../lib/nav'
 
 const CLICK_SLOP = 6
 const FLOWER_REACH = 30
 const FLOWER_HIT_SQ = 0.06
+const DOUBLE_MS = 320 // max gap between the two clicks of a double-click
+const PICK_DELAY = 260 // single clicks wait this long in walk mode in case a second click follows
 
-// Drag-to-look in walk mode, plus analytic picking (spheres for sculptures, ray-to-point for flowers).
+// Drag-to-look and Street View-style moves in walk mode (double-click, or tap on touch), plus
+// analytic picking (spheres for sculptures, ray-to-point for flowers, registered pickers).
 export default function Interaction() {
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
@@ -25,12 +29,24 @@ export default function Interaction() {
     const pointers = new Map()
 
     const world = getWorld()
+    let pending = null
 
-    const pick = (cx, cy) => {
+    const rayAt = (cx, cy) => {
       const rect = el.getBoundingClientRect()
       ndc.set(((cx - rect.left) / rect.width) * 2 - 1, -((cy - rect.top) / rect.height) * 2 + 1)
       raycaster.setFromCamera(ndc, camera)
-      const ray = raycaster.ray
+      return raycaster.ray
+    }
+
+    const moveTo = (cx, cy) => {
+      const p = groundHit(rayAt(cx, cy), world)
+      if (!p || p.distanceTo(player.pos) > MAX_WALK) return
+      // Clicks on beds, hedges or water only snap a short way; further off, nothing happens.
+      if (rig.walkTo(p.x, p.z, 0.8)) player.target = { x: p.x, z: p.z, t: performance.now() }
+    }
+
+    const pick = (cx, cy) => {
+      const ray = rayAt(cx, cy)
       let best = null
 
       for (const s of world.sculptures) {
@@ -78,6 +94,7 @@ export default function Interaction() {
       p.x = e.clientX
       p.y = e.clientY
       if (useGarden.getState().mode !== 'walk') return
+      if (Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > CLICK_SLOP) player.dragging = true
       const k = e.pointerType === 'touch' ? 0.005 : 0.0028
       player.yaw -= dx * k
       player.pitch = THREE.MathUtils.clamp(player.pitch - dy * k, -1.2, 1.2)
@@ -87,12 +104,42 @@ export default function Interaction() {
       const p = pointers.get(e.pointerId)
       pointers.delete(e.pointerId)
       el.style.cursor = ''
+      if (!pointers.size) player.dragging = false
       if (!p) return
       if (Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > CLICK_SLOP || performance.now() - p.t > 500) return
 
       const st = useGarden.getState()
-      if (st.mode === 'flying' || st.mode === 'intro' || st.photo) return
+      if (st.mode === 'flying' || st.mode === 'intro' || st.mode === 'tour' || st.photo) return
       const result = pick(e.clientX, e.clientY)
+      if (result?.immediate) {
+        result.onSelect()
+        return
+      }
+      if (st.mode === 'walk') {
+        if (e.pointerType === 'mouse') {
+          const now = performance.now()
+          if (pending && now - pending.t < DOUBLE_MS && Math.hypot(e.clientX - pending.x, e.clientY - pending.y) < 14) {
+            clearTimeout(pending.timer)
+            pending = null
+            moveTo(e.clientX, e.clientY)
+            return
+          }
+          clearTimeout(pending?.timer)
+          pending = { t: now, x: e.clientX, y: e.clientY, timer: setTimeout(() => ((pending = null), handle(result)), PICK_DELAY) }
+          return
+        }
+        // Touch: tap a flower or feature to select it, tap anywhere else to walk there.
+        if (!result) {
+          if (st.selected?.kind === 'flower') st.set({ selected: null })
+          moveTo(e.clientX, e.clientY)
+          return
+        }
+      }
+      handle(result)
+    }
+
+    const handle = (result) => {
+      const st = useGarden.getState()
       if (!result) {
         if (st.selected?.kind === 'flower') st.set({ selected: null })
         return
@@ -121,6 +168,7 @@ export default function Interaction() {
       el.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
+      clearTimeout(pending?.timer)
     }
   }, [gl, camera])
 

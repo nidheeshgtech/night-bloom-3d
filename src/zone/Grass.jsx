@@ -5,6 +5,7 @@ import { MASK_EXTENT, getMasks } from './mask'
 import { TERRAIN_GLSL } from '../world/terrain'
 import { zoneUniforms } from './materials'
 import { useGarden } from '../lib/store'
+import { withNightLight } from './nightlight'
 
 const SETTINGS = { high: { cell: 0.075, radius: 13 }, low: { cell: 0.13, radius: 8 } }
 
@@ -98,6 +99,7 @@ export default function Grass() {
           diffuseColor.rgb *= mix(base, tip, smoothstep(0.0, 1.0, vH));`,
         )
     }
+    withNightLight(m)
     const mesh = new THREE.Mesh(g, m)
     mesh.frustumCulled = false
     mesh.receiveShadow = true

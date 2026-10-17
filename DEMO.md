@@ -12,10 +12,17 @@
    Ribbon Arcade → inside the butterfly glasshouse → sunset → Lantern Shore at night.
    Talk over it; captions carry the story.
 3. When it ends you have control. Good live moments:
-   - Click **Wingsong Conservatory** → **Enter**, walk in (WASD / drag), click a butterfly.
+   - Click **Wingsong Conservatory** → **Enter**. Walk Street View-style: double-click the path
+     (or click a floor arrow), drag to look around. Click a butterfly.
    - Slide the time of day to night and enter **Lantern Shore**; click a lantern for the light wave.
    - Click any flower for its botanical card.
 4. **Take control** or **Esc** stops the tour at any time.
+
+## Walking controls
+- **Desktop:** double-click the ground to walk there (routes around beds, hedges and water),
+  click a floor arrow to follow the path, drag to look, WASD/Shift also works.
+- **Touch:** tap the ground or an arrow to walk, swipe to look, tap flowers to learn more.
+- **Exit to aerial view** returns to the overview.
 
 ## Handy keys
 - `` ` `` (backtick): show/hide fps, draw calls and triangles (for technical audiences).

@@ -12,6 +12,7 @@ import Interaction from './scene/Interaction'
 import Effects from './scene/Effects'
 import Perf from './scene/Perf'
 import Warmup from './scene/Warmup'
+import NavArrows from './scene/NavArrows'
 import Hud from './ui/Hud'
 import { useGarden } from './lib/store'
 import BotanyPreview from './zone/BotanyPreview'
@@ -67,6 +68,7 @@ export default function App() {
         <SelectionMarker />
         <CameraRig />
         <Interaction />
+        <NavArrows />
         <Perf />
         <Warmup />
         {quality === 'high' && (isZone ? <ZoneEffects /> : <Effects />)}

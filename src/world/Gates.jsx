@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { metalMat, pbrSet } from '../zone/materials'
+import { withNightLight } from '../zone/nightlight'
 import { ZONES, spokes } from './plan'
 
 const SPAN = 2.9 // half-span
@@ -68,7 +69,7 @@ export default function Gates() {
   }, [])
   const stone = useMemo(() => {
     const t = pbrSet('white_sandstone_bricks', 1)
-    return new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#e8dccb' })
+    return withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#e8dccb' }))
   }, [])
   const box = useMemo(() => new THREE.BoxGeometry(1, 1, 1), [])
   return (

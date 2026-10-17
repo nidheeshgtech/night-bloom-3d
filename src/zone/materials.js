@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { getAtlas } from './botany/atlas'
+import { nightUniforms, withNightLight } from './nightlight'
 
 // Set when static shadow casters are added, so the cached shadow map is re-rendered.
 export const shadows = { dirty: true }
@@ -30,16 +31,19 @@ export function plantMaterial() {
   })
   plant.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = zoneUniforms.uTime
+    shader.uniforms.uPetalNight = nightUniforms.uNightLevel
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
         `#include <common>
         attribute float aTint;
-        uniform float uTime;`,
+        uniform float uTime;
+        varying float vPetal;`,
       )
       .replace(
         '#include <color_vertex>',
         `// vColor is vec3 or vec4 depending on three's defines; this form works for both.
+        vPetal = aTint;
         vColor *= 0.0;
         vColor += 1.0;
         #ifdef USE_COLOR
@@ -62,7 +66,12 @@ export function plantMaterial() {
         transformed.x += sin(uTime * 1.6 + ph) * 0.03 * sway;
         transformed.z += cos(uTime * 1.3 + ph * 1.3) * 0.02 * sway;`,
       )
+    // At night petals keep a faint glow of their own colour so beds never turn black.
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vPetal;\nuniform float uPetalNight;')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * vPetal * uPetalNight * 0.28;')
   }
+  withNightLight(plant)
   return plant
 }
 
@@ -98,10 +107,10 @@ export function pbrSet(name, repeat) {
 }
 
 // Structural and prop materials.
-export const metalMat = new THREE.MeshStandardMaterial({ color: '#2b2520', metalness: 0.75, roughness: 0.4 })
+export const metalMat = withNightLight(new THREE.MeshStandardMaterial({ color: '#2b2520', metalness: 0.75, roughness: 0.4 }))
 export const terracottaMat = new THREE.MeshStandardMaterial({ color: '#b4613d', roughness: 0.85 })
-export const woodMat = new THREE.MeshStandardMaterial({ color: '#8a5a36', roughness: 0.65 })
-export const concreteMat = new THREE.MeshStandardMaterial({ color: '#7d776d', roughness: 0.95 })
+export const woodMat = withNightLight(new THREE.MeshStandardMaterial({ color: '#8a5a36', roughness: 0.65 }))
+export const concreteMat = withNightLight(new THREE.MeshStandardMaterial({ color: '#7d776d', roughness: 0.95 }))
 // Lamp glass and arch string lights; emissive intensity follows time of day.
 export const bulbMat = new THREE.MeshStandardMaterial({ color: '#cfc6b4', emissive: '#ffc780', emissiveIntensity: 0, roughness: 0.3 })
 

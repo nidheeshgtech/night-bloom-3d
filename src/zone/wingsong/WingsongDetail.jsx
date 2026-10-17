@@ -12,7 +12,8 @@ import { PALMS_IN, conservatoryBeds } from './planting'
 import { PATH_HALF_IN, POND, STREAM_HALF, innerPath, stream, toWorld } from './layout'
 import { heightAt } from '../../world/terrain'
 import { rippleTexture } from '../../world/Lake'
-import { pbrSet } from '../materials'
+import { pbrSet, zoneUniforms } from '../materials'
+import { withNightLight } from '../nightlight'
 import { useGarden } from '../../lib/store'
 
 const LIFT = 0.03
@@ -49,13 +50,14 @@ function Water() {
   const { mat, tex } = useMemo(() => {
     const tex = rippleTexture()
     tex.repeat.set(1.2, 1.2)
-    const mat = new THREE.MeshStandardMaterial({ color: '#1d4a4e', roughness: 0.04, normalMap: tex, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.3 })
+    const mat = new THREE.MeshStandardMaterial({ color: '#1d4a4e', emissive: '#1f9fc0', emissiveIntensity: 0, roughness: 0.04, normalMap: tex, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.3 })
     return { mat, tex }
   }, [])
   const geo = useMemo(streamGeometry, [])
   const pond = toWorld(POND.a, POND.l)
   useFrame((_, dt) => {
     tex.offset.y -= dt * 0.3
+    mat.emissiveIntensity = zoneUniforms.uNight.value * 0.5
   })
   return (
     <>
@@ -71,7 +73,7 @@ function Rocks() {
   const w = getWingsongLibrary()
   const mat = useMemo(() => {
     const t = pbrSet('mossy_rock', 1)
-    return new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, aoMap: t.arm, roughness: 1 })
+    return withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, aoMap: t.arm, roughness: 1 }))
   }, [])
   const lists = useMemo(() => [0, 1, 2].map((k) => w.items.rock.filter((r) => r.variant === k).map((r) => r.matrix)), [w])
   return w.rock.map((g, k) => <Instances key={k} geometry={g} matrices={lists[k]} material={mat} />)

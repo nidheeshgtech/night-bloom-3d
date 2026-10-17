@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { mulberry32 } from '../lib/random'
 import { heightAt } from '../world/terrain'
 import { pbrSet } from './materials'
+import { withNightLight } from './nightlight'
 
 const TILE = 1.6 // herringbone repeat in metres (~16 cm bricks)
 const LIFT = 0.035
@@ -41,7 +42,7 @@ let paving = null
 export const pavingMaterial = () => {
   if (paving) return paving
   const t = pbrSet('herringbone_pavement', 1)
-  paving = new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, aoMap: t.arm, roughness: 1 })
+  paving = withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, aoMap: t.arm, roughness: 1 }))
   return paving
 }
 
@@ -49,7 +50,7 @@ let kerb = null
 const kerbMaterial = () => {
   if (kerb) return kerb
   const t = pbrSet('white_sandstone_bricks', 1)
-  kerb = new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#e8dccb' })
+  kerb = withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#e8dccb' }))
   return kerb
 }
 

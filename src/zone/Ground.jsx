@@ -5,6 +5,7 @@ import { MASK_EXTENT, getMasks } from './mask'
 import { pbrSet } from './materials'
 import { useGarden } from '../lib/store'
 import { PLANT_FAR } from './LodInstances'
+import { withNightLight } from './nightlight'
 
 const SIZE = 520
 const GRASS_TILE = 3 // metres per texture repeat
@@ -81,7 +82,7 @@ export default function Ground() {
         )
     }
     m.customProgramCacheKey = () => `ground-${far}`
-    return m
+    return withNightLight(m)
   }, [far])
 
   return (

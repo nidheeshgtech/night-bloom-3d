@@ -4,6 +4,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { ZONES, spokes } from './plan'
 import { latticeTexture } from './patterns'
 import { pavilionGlowMat, pbrSet, woodMat } from '../zone/materials'
+import { withNightLight } from '../zone/nightlight'
 
 // Barjeel (wind-tower) pavilions flanking every zone gate: an original design in the
 // regional vernacular — sandstone body, slotted tower with mashrabiya screens, timber poles.
@@ -92,7 +93,7 @@ export default function Pavilions() {
   const meshes = useMemo(() => {
     const parts = pavilionParts()
     const t = pbrSet('white_sandstone_bricks', 1)
-    const stoneMat = new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#efe2cc' })
+    const stoneMat = withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#efe2cc' }))
     const screenMat = new THREE.MeshStandardMaterial({ map: latticeTexture(), alphaTest: 0.5, side: THREE.DoubleSide, color: '#3e2716', roughness: 0.75 })
     const matrices = PAVILIONS.map((p) => new THREE.Matrix4().compose(p.pos, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), p.yaw), new THREE.Vector3(1, 1, 1)))
     return [

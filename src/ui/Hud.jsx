@@ -5,7 +5,6 @@ import { audio } from '../lib/audio'
 import { getWorld } from '../lib/world'
 import { capturePhoto } from './capture'
 import InfoPanel from './InfoPanel'
-import Joystick from './Joystick'
 import Icon from './Icon'
 
 function Intro({ leaving, onGone }) {
@@ -55,8 +54,8 @@ function PerfOverlay() {
 
 const HINTS = {
   aerial: 'Drag to orbit · Scroll to zoom · Pick a zone to fly there',
-  walk: 'WASD to walk · Shift to run · Drag to look · Click flowers and sculptures',
-  walkTouch: 'Left stick to walk · Drag to look · Tap flowers and sculptures',
+  walk: 'Double-click to walk · Drag to look around · Click arrows or flowers · WASD also works',
+  walkTouch: 'Tap the ground or an arrow to walk · Swipe to look · Tap flowers to learn more',
   inspect: 'Drag to circle the sculpture · Esc to go back',
 }
 
@@ -195,7 +194,7 @@ export default function Hud() {
           )}
           {mode === 'walk' && (
             <button className="btn" onClick={rig.toAerial}>
-              Aerial view
+              Exit to aerial view
             </button>
           )}
           {mode === 'inspect' && (
@@ -225,7 +224,6 @@ export default function Hud() {
       </div>
 
       <InfoPanel />
-      {isTouch && mode === 'walk' && <Joystick />}
     </div>
   )
 }

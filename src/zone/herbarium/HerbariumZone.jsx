@@ -12,6 +12,7 @@ import { cypressGeometry, fruitTreeGeometry, ghafGeometry, hedgeAlong } from '..
 import { getLibrary } from '../library'
 import { brassMat, fanousGlassMat, pbrSet, plantMaterial, plantDepthMaterial, zoneUniforms } from '../materials'
 import { makePath } from '../../world/pathlib'
+import { withNightLight } from '../nightlight'
 import { rippleTexture } from '../../world/Lake'
 import { rosetteMaterial } from '../../world/patterns'
 import { useGarden } from '../../lib/store'
@@ -141,11 +142,12 @@ function Water({ geometry }) {
   const { mat, tex } = useMemo(() => {
     const tex = rippleTexture()
     tex.repeat.set(1.5, 1.5)
-    const mat = new THREE.MeshStandardMaterial({ color: '#1a4a52', roughness: 0.04, metalness: 0.1, normalMap: tex, normalScale: new THREE.Vector2(0.3, 0.3), envMapIntensity: 1.4 })
+    const mat = new THREE.MeshStandardMaterial({ color: '#1a4a52', emissive: '#1f9fc0', emissiveIntensity: 0, roughness: 0.04, metalness: 0.1, normalMap: tex, normalScale: new THREE.Vector2(0.3, 0.3), envMapIntensity: 1.4 })
     return { mat, tex }
   }, [])
   useFrame((_, dt) => {
     tex.offset.y -= dt * 0.08
+    mat.emissiveIntensity = zoneUniforms.uNight.value * 0.55
   })
   return <mesh geometry={geometry} material={mat} receiveShadow />
 }
@@ -307,7 +309,7 @@ function pavilionGeometry() {
 
 function Pavilion({ stone }) {
   const parts = useMemo(pavilionGeometry, [])
-  const plaster = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f3dcbc', roughness: 0.85, envMapIntensity: 0.35, side: THREE.DoubleSide }), [])
+  const plaster = useMemo(() => withNightLight(new THREE.MeshStandardMaterial({ color: '#f3dcbc', roughness: 0.85, envMapIntensity: 0.35, side: THREE.DoubleSide })), [])
   const floor = useMemo(() => {
     const g = new THREE.RingGeometry(0, PAV.radius - 0.2, 48, 4)
     g.rotateX(-Math.PI / 2)
@@ -397,7 +399,7 @@ export default function HerbariumZone() {
   const lib = getLibrary()
   const stone = useMemo(() => {
     const t = pbrSet('white_sandstone_bricks', 1)
-    return new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#efe2cc' })
+    return withNightLight(new THREE.MeshStandardMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.arm, roughness: 1, color: '#efe2cc' }))
   }, [])
   const paving = useMemo(() => mergeGeometries(PAVING.map((r) => rectGeo(...r, 0.035))), [])
   const plaza = useMemo(() => {

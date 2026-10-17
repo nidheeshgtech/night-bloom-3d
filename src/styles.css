@@ -428,32 +428,6 @@ input:focus-visible {
   box-shadow: 0 0 10px var(--c);
 }
 
-/* Joystick */
-.joystick {
-  position: fixed;
-  left: 24px;
-  bottom: 150px;
-  width: 112px;
-  height: 112px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  touch-action: none;
-}
-
-.knob {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 46px;
-  height: 46px;
-  margin: -23px 0 0 -23px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-}
-
 /* Photo mode */
 .photo-bar {
   position: fixed;
@@ -483,9 +457,6 @@ input:focus-visible {
     scrollbar-width: none;
   }
 
-  .joystick {
-    bottom: 170px;
-  }
 
   .panel {
     top: auto;
@@ -498,8 +469,7 @@ input:focus-visible {
   }
 
   .has-panel .dock,
-  .has-panel .hint,
-  .has-panel .joystick {
+  .has-panel .hint {
     opacity: 0;
     pointer-events: none;
   }

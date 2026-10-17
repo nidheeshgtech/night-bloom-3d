@@ -8,12 +8,16 @@ import { useGarden } from '../lib/store'
 import { arches, archPoint, lamps } from './planting'
 import { pathToWorld } from './layout'
 import { bulbMat, fanousGlassMat, pavilionGlowMat, shadows, zoneUniforms } from './materials'
+import { nightUniforms } from './nightlight'
+import { buildNightMap } from './nightmap'
 
 // Sun direction measured from the HDRI's brightest pixel, so shadows match the visible sun.
 export const SUN_DIR = new THREE.Vector3(0.704, 0.486, 0.517).normalize()
 
 const DAY = { env: 0.9, bg: 1.05, sun: 3.6, sunColor: new THREE.Color('#ffd09a'), fog: new THREE.Color('#e3cba6'), lamp: 0, bulb: 0 }
-const NIGHT = { env: 0.06, bg: 0.04, sun: 0.4, sunColor: new THREE.Color('#9db0ff'), fog: new THREE.Color('#0b1120'), lamp: 22, bulb: 5 }
+// Night: a moonlit festival, not darkness. Moon still casts shadows; a violet sky fill and the
+// painted light map (nightmap.js) keep every bed, path and tree readable and colourful.
+const NIGHT = { env: 0.16, bg: 0.07, sun: 1.0, sunColor: new THREE.Color('#a9b8ff'), fog: new THREE.Color('#231c42'), lamp: 22, bulb: 5, hemi: 0.95 }
 
 function Stars() {
   const { geometry, material } = useMemo(() => {
@@ -52,6 +56,13 @@ export default function ZoneLighting() {
   const hdri = useEnvironment({ files: `${import.meta.env.BASE_URL}assets/hdri/autumn_field_puresky_2k.hdr` })
   const night = useRef(useGarden.getState().night)
   const lampLights = useRef([])
+  const hemi = useRef()
+
+  useEffect(() => {
+    const map = buildNightMap()
+    nightUniforms.uNightMap.value = map
+    return () => map.dispose()
+  }, [])
 
   const sun = useMemo(() => {
     const l = new THREE.DirectionalLight('#ffe2bf', DAY.sun)
@@ -123,6 +134,8 @@ export default function ZoneLighting() {
     bulbMat.emissiveIntensity = lerp(DAY.bulb, NIGHT.bulb, t)
     zoneUniforms.uTime.value = state.clock.elapsedTime
     zoneUniforms.uNight.value = t
+    nightUniforms.uNightLevel.value = t
+    if (hemi.current) hemi.current.intensity = NIGHT.hemi * t
     zoneUniforms.uPlayer.value.copy(state.camera.position)
   })
 
@@ -132,6 +145,7 @@ export default function ZoneLighting() {
       <SkyBackdrop texture={hdri} />
       <fogExp2 attach="fog" args={['#e3cba6', 0.0011]} />
       <primitive object={sun} />
+      <hemisphereLight ref={hemi} args={['#7c6ee0', '#1e3a58', 0]} />
       <primitive object={sun.target} />
       {lightSpots.map((p, i) => (
         <pointLight key={i} ref={(l) => (lampLights.current[i] = l)} position={p} color="#ffc27a" intensity={0} distance={16} decay={2} />

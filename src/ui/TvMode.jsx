@@ -40,7 +40,7 @@ export default function TvMode() {
     if (!ready || mode === 'tour' || mode === 'flying') return
     const t = setTimeout(() => {
       useGarden.setState({ mode: 'aerial' })
-      rig.tour()
+      rig.tour({ silent: true })
     }, mode === 'intro' ? 300 : 2500)
     return () => clearTimeout(t)
   }, [ready, mode])

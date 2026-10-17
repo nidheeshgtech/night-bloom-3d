@@ -188,7 +188,7 @@ export default function CameraRig() {
     }
 
     // Hands-off cinematic tour along the world's tour segments.
-    rig.tour = () => {
+    rig.tour = ({ silent = false } = {}) => {
       if (!world.tour) return
       tween.current?.kill()
       const segs = world.tour()
@@ -198,8 +198,8 @@ export default function CameraRig() {
       let prevPos = camera.position.clone()
       let prevLook = currentLook()
       set({ mode: 'tour', selected: null, focus: null, caption: null })
-      // The tour starts from a click, so the browser allows sound.
-      if (!useGarden.getState().audio) {
+      // The tour starts from a click, so the browser allows sound (TV mode autoplays silently).
+      if (!silent && !useGarden.getState().audio) {
         audio.start()
         set({ audio: true })
       }

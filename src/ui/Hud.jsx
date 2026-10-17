@@ -7,6 +7,7 @@ import { capturePhoto } from './capture'
 import InfoPanel from './InfoPanel'
 import CtaNote from './CtaNote'
 import SiteMap from './SiteMap'
+import DPad from './DPad'
 import Icon from './Icon'
 import { BRAND } from '../brand'
 
@@ -58,7 +59,7 @@ function PerfOverlay() {
 const HINTS = {
   aerial: 'Drag to orbit · Scroll to zoom · Pick a zone to fly there',
   walk: 'Double-click to walk · Drag to look around · Click arrows or flowers · WASD also works',
-  walkTouch: 'Tap the ground or an arrow to walk · Swipe to look · Tap flowers to learn more',
+  walkTouch: 'Hold the arrows to walk and turn · Or tap the ground · Swipe to look',
   inspect: 'Drag to circle the sculpture · Esc to go back',
 }
 
@@ -259,6 +260,7 @@ export default function Hud() {
       <InfoPanel />
       <CtaNote />
       <SiteMap />
+      {isTouch && mode === 'walk' && <DPad />}
     </div>
   )
 }

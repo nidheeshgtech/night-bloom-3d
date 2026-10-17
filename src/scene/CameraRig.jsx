@@ -4,7 +4,7 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { useGarden } from '../lib/store'
-import { player, rig } from '../lib/player'
+import { input, player, rig } from '../lib/player'
 import { shared } from '../lib/flowerMaterial'
 import { zoneUniforms } from '../zone/materials'
 import { audio } from '../lib/audio'
@@ -15,6 +15,7 @@ const EYE = 1.7
 const WALK_SPEED = 4
 const RUN_SPEED = 8
 const AUTO_SPEED = 3.8 // Street View-style glide speed, m/s
+const TURN_SPEED = 1.6 // rad/s when holding left/right on the touch pad
 const WALK_PITCH = -0.1 // slight downward look so the path and its arrows are in view
 const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b))
 
@@ -294,13 +295,15 @@ export default function CameraRig() {
     const dt = Math.min(delta, 0.05)
     const k = keys.current
     let mx = (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0)
-    let mz = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0)
+    let mz = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0) + input.move
     const len = Math.hypot(mx, mz)
     if (len > 1) {
       mx /= len
       mz /= len
     }
-    if (len > 0.01) player.auto = null
+    // Touch pad: left/right steer the view like a car; any pad input cancels a glide.
+    if (input.turn) player.yaw -= input.turn * TURN_SPEED * dt
+    if (len > 0.01 || input.turn) player.auto = null
     let nx
     let nz
     const auto = player.auto

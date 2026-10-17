@@ -947,3 +947,86 @@ input:focus-visible {
     transform: none;
   }
 }
+
+/* Touch direction pad */
+.dpad {
+  position: fixed;
+  left: calc(var(--gutter) + env(safe-area-inset-left, 0px));
+  bottom: calc(var(--gutter) + 72px + env(safe-area-inset-bottom, 0px));
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(15, 10, 20, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  z-index: 15;
+}
+
+.dpad-btn {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--glass-strong);
+  color: var(--ink);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s, background 0.12s, color 0.12s;
+}
+
+.dpad-btn.held {
+  transform: scale(0.92);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+
+.dpad-up {
+  top: 6px;
+  left: 49px;
+}
+
+.dpad-down {
+  bottom: 6px;
+  left: 49px;
+}
+
+.dpad-left {
+  left: 6px;
+  top: 49px;
+}
+
+.dpad-right {
+  right: 6px;
+  top: 49px;
+}
+
+.dpad-hub {
+  position: absolute;
+  top: 63px;
+  left: 63px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Keep the hint and info sheet clear of the pad on phones. */
+@media (max-width: 640px) {
+  .hint {
+    bottom: calc(var(--gutter) + 236px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .has-panel .dpad {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

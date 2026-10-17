@@ -96,6 +96,7 @@ export default function CameraRig() {
 
     // Enter the focused zone (or the default spawn) at eye level.
     rig.enter = () => {
+      world.setLevel?.('ground')
       const zone = world.zones?.find((z) => z.id === useGarden.getState().focus)
       const { pos, yaw } = zone ? zone.spawn : world.spawn
       set({ selected: null, siteMap: false })
@@ -138,6 +139,7 @@ export default function CameraRig() {
       const st = useGarden.getState()
       if (st.mode === 'flying' || st.mode === 'tour') return
       set({ selected: null, siteMap: false })
+      world.setLevel?.(poi.level || 'ground')
       if (poi.fly) {
         const target = poi.pos.clone().setY(poi.pos.y + 1)
         return fly(target.clone().add(new THREE.Vector3(0, 40, 45)), target, { duration: 2.6, onDone: () => toOrbit(target, 'aerial') })
@@ -165,9 +167,10 @@ export default function CameraRig() {
       }
       const start = () => set({ show: zoneUniforms.uTime.value + 1.2 })
       if (st.mode === 'walk') return start()
-      const target = new THREE.Vector3(0, 46, 0)
+      const view = world.showView || { pos: [0, 9, 118], target: [0, 46, 0] }
+      const target = new THREE.Vector3(...view.target)
       set({ focus: null })
-      fly(new THREE.Vector3(0, 9, 118), target, { duration: 3, arc: 6, onDone: () => (toOrbit(target, 'aerial'), start()) })
+      fly(new THREE.Vector3(...view.pos), target, { duration: 3, arc: 6, onDone: () => (toOrbit(target, 'aerial'), start()) })
     }
     rig.stopShow = () => set({ show: null })
 
@@ -200,11 +203,23 @@ export default function CameraRig() {
         audio.start()
         set({ audio: true })
       }
+      const fade = document.querySelector('.tour-fade')
       segs.forEach((seg) => {
-        const pc = new THREE.CatmullRomCurve3([prevPos, ...seg.pos], false, 'centripetal')
-        const lc = new THREE.CatmullRomCurve3([prevLook, ...seg.look], false, 'centripetal')
+        // A cut dips to black and starts the segment at its own first point (used to enter
+        // interiors without flying through walls). Cut segments need two or more points.
+        const cut = seg.cut && fade && seg.pos.length > 1
+        if (cut) tl.to(fade, { opacity: 1, duration: 0.7, ease: 'power1.in' })
+        const pc = new THREE.CatmullRomCurve3(cut ? seg.pos : [prevPos, ...seg.pos], false, 'centripetal')
+        const lc = new THREE.CatmullRomCurve3(cut ? seg.look : [prevLook, ...seg.look], false, 'centripetal')
         const st = { t: 0 }
         tl.call(() => set({ caption: { title: seg.caption, sub: seg.sub } }))
+        if (cut) {
+          tl.call(() => {
+            camera.position.copy(seg.pos[0])
+            camera.lookAt(seg.look[0])
+          })
+          tl.to(fade, { opacity: 0, duration: 0.9, ease: 'power1.out' })
+        }
         tl.to(st, {
           t: 1,
           duration: seg.duration,
@@ -213,7 +228,7 @@ export default function CameraRig() {
             camera.position.copy(pc.getPointAt(st.t))
             camera.lookAt(lc.getPointAt(st.t, look))
           },
-        })
+        }, cut ? '<' : undefined)
         if (seg.night !== undefined) {
           tl.to(night, { v: seg.night, duration: seg.duration, ease: 'sine.inOut', onUpdate: () => set({ night: night.v }) }, '<')
         }
@@ -227,6 +242,8 @@ export default function CameraRig() {
     rig.stopTour = () => {
       if (useGarden.getState().mode !== 'tour') return
       tween.current?.kill()
+      const fade = document.querySelector('.tour-fade')
+      if (fade) fade.style.opacity = 0
       const dir = new THREE.Vector3()
       camera.getWorldDirection(dir)
       // Orbit around the point the camera was looking at, on the ground.
@@ -236,6 +253,7 @@ export default function CameraRig() {
     }
 
     rig.toAerial = () => {
+      world.setLevel?.('ground')
       set({ selected: null, focus: null })
       const { target, distance, height } = world.aerial
       const dir = camera.position.clone().sub(target).setY(0)

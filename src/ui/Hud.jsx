@@ -8,6 +8,7 @@ import InfoPanel from './InfoPanel'
 import CtaNote from './CtaNote'
 import SiteMap from './SiteMap'
 import DPad from './DPad'
+import TvMode from './TvMode'
 import { CATEGORIES, POIS, SCHEDULE_TITLE, VENUE_DATA as EVENT } from '../venue'
 import { NextUp, SchedulePanel } from '../event/EventUI'
 import Icon from './Icon'
@@ -33,7 +34,7 @@ function Intro({ leaving, onGone }) {
               Watch the tour
             </button>
             <button className="btn" onClick={() => start(false)}>
-              Explore the garden
+              {BRAND.exploreLabel || 'Explore the garden'}
             </button>
           </div>
         ) : (
@@ -116,7 +117,7 @@ function Festival({ close }) {
   const list = POIS.filter((p) => !hidden.includes(p.cat) && (p.cat !== 'wc' && p.cat !== 'info' ? true : !seen.has(p.cat) && seen.add(p.cat)))
   return (
     <>
-      <p className="label">{EVENT.scheduleTitle ? 'Resort' : 'Festival'} · show on map</p>
+      <p className="label">{EVENT.mapLabel || (EVENT.scheduleTitle ? 'Resort' : 'Festival')} · show on map</p>
       <div className="cat-chips">
         {Object.entries(CATEGORIES).map(([id, c]) => (
           <button key={id} className={hidden.includes(id) ? '' : 'on'} style={{ '--cat': c.color }} onClick={() => toggle(id)}>
@@ -153,7 +154,12 @@ function Hint({ text, mode }) {
   return <p className={`hint ${visible ? 'show' : ''}`}>{text}</p>
 }
 
+// TV mode is decided once per page load, so it gets its own component.
 export default function Hud() {
+  return ROUTE.tv ? <TvMode /> : <HudMain />
+}
+
+function HudMain() {
   const mode = useGarden((s) => s.mode)
   const night = useGarden((s) => s.night)
   const quality = useGarden((s) => s.quality)
@@ -282,7 +288,7 @@ export default function Hud() {
           )}
           {mode === 'aerial' && focused?.status !== 'soon' && (
             <button className="bar-primary" onClick={rig.enter}>
-              {focused ? `Enter ${focused.name}` : 'Enter garden'}
+              {focused ? `Enter ${focused.name}` : BRAND.enterLabel || 'Enter garden'}
             </button>
           )}
           {(mode === 'aerial' || mode === 'walk') && world.tour && (

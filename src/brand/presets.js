@@ -74,6 +74,43 @@ export const PRESETS = {
       sponsors: [],
     },
   },
+  // Fictional beachfront hotel: its own world (sea, beach, crescent hotel, lobby, suite), TV mode.
+  hotel: {
+    name: 'Saffron Shores Resort',
+    eyebrow: 'Beachfront resort · virtual tour',
+    lede: 'Walk the beach, the lagoon pool and the lobby, and step inside a sea-view suite before you book.',
+    fine: 'Fictional hotel demo built on the Night Bloom engine.',
+    accent: '#e0b25a',
+    accentInk: '#2a1d06',
+    mark: ['#e0b25a', '#3fc6c0', '#ffffff', '#ff8a5c'],
+    cta: { label: 'Book your stay', url: '' },
+    showText: 'SAFFRON',
+    venue: 'hotel',
+    exploreLabel: 'Explore the resort',
+    enterLabel: 'Start walking',
+    zones: {},
+    event: {
+      dates: 'Open daily',
+      scheduleTitle: 'Today',
+      mapLabel: 'Resort',
+      clockStart: '17:22',
+      schedule: [
+        { time: '07:00', title: 'Sunrise beach yoga', where: 'beach' },
+        { time: '10:30', title: 'Aqua fitness', where: 'pool' },
+        { time: '13:00', title: 'Kids club pizza party', where: 'kids' },
+        { time: '17:45', title: 'Sunset at the pier', where: 'pier' },
+        { time: '19:30', title: 'Seafood dinner', where: 'restaurant' },
+        { time: '21:00', title: 'Fireworks over the bay', where: 'show' },
+      ],
+      offers: [
+        ['Saffron Spa', '90-minute hammam ritual · ask at reception'],
+        ['Overwater dinner', 'Chef’s tasting menu tonight from 19:30'],
+        ['Kids club', 'Free daily activities for ages 4–12'],
+        ['Late checkout', 'Stay until 4pm, subject to availability'],
+      ],
+      sponsors: [],
+    },
+  },
   // Fictional sample client, to show how one config re-brands the whole experience.
   oasis: {
     name: 'Oasis Grove Resort',

@@ -73,11 +73,11 @@ function towerGeometry(rand, height) {
   return { geometry: g, top: y }
 }
 
-function buildSkyline() {
+function buildSkyline(clusters, groundAt) {
   const rand = mulberry32(2030)
   const parts = []
   const tops = []
-  for (const c of CLUSTERS) {
+  for (const c of clusters) {
     for (let i = 0; i < c.count; i++) {
       // Taller towers toward the centre of each cluster.
       const k = (rand() * 2 - 1) * Math.pow(rand(), 0.6)
@@ -87,9 +87,9 @@ function buildSkyline() {
       const x = Math.cos(a) * d
       const z = Math.sin(a) * d
       const { geometry, top } = towerGeometry(rand, height)
-      geometry.translate(x, duneHeight(x, z) - 4, z)
+      geometry.translate(x, groundAt(x, z) - 4, z)
       parts.push(geometry)
-      if (height > 90) tops.push(x, duneHeight(x, z) - 4 + top + 1, z, rand() * 6.28)
+      if (height > 90) tops.push(x, groundAt(x, z) - 4 + top + 1, z, rand() * 6.28)
     }
   }
   const g = mergeGeometries(parts)
@@ -176,8 +176,9 @@ function AviationLights({ tops }) {
   return <primitive object={points} />
 }
 
-export default function Skyline() {
-  const { geometry, tops } = useMemo(buildSkyline, [])
+// clusters/groundAt let other worlds place their own skyline.
+export default function Skyline({ clusters = CLUSTERS, groundAt = duneHeight } = {}) {
+  const { geometry, tops } = useMemo(() => buildSkyline(clusters, groundAt), [clusters, groundAt])
   const material = useMemo(towerMaterial, [])
   return (
     <>

@@ -35,4 +35,22 @@ export const DEMOS = [
     tags: ['Guided tour', 'Booking buttons', 'Today’s activities'],
     image: 'showcase/resort.jpg',
   },
+  {
+    path: 'hotel',
+    title: 'Saffron Shores Resort',
+    kind: 'Beach hotel home tour',
+    pitch: 'A crescent beach hotel on the Gulf: lobby, suite, lagoon pool, pier and overwater dining, from sunrise to fireworks.',
+    for: 'Beach hotels · resorts · sales teams',
+    tags: ['Interiors', 'Guided tour', 'Book your stay'],
+    image: 'showcase/hotel.jpg',
+  },
+  {
+    path: 'hotel-tv',
+    title: 'Saffron Shores · TV mode',
+    kind: 'Lobby & in-room TV loop',
+    pitch: 'The same hotel as a hands-free loop for lobby screens and room TVs: live clock, today’s activities, offers and a scan-to-book QR code.',
+    for: 'Hotel lobbies · room TVs · signage',
+    tags: ['Auto-play loop', 'Live schedule', 'QR booking'],
+    image: 'showcase/hotel-tv.jpg',
+  },
 ]

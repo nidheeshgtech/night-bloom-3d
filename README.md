@@ -27,7 +27,8 @@ Original concept. Not affiliated with any existing attraction.
 
 ## Demos
 
-- `/` showcase · `/garden` botanical world · `/festival` event venue map · `/resort` resort tour
+- `/` showcase · `/garden` botanical world · `/festival` event venue map · `/resort` resort tour ·
+  `/hotel` beach hotel home tour · `/hotel-tv` looping hotel tour for lobby and room TVs
 
 ## Run it
 

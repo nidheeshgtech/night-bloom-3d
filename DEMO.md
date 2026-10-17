@@ -7,6 +7,8 @@
 | Garden | `/garden` | Botanical attraction demo |
 | Festival | `/festival` | Event venue map demo |
 | Resort | `/resort` | Resort virtual tour demo |
+| Beach hotel | `/hotel` | Beach hotel home tour (interiors, pool, pier, villas) |
+| Hotel TV | `/hotel-tv` | Hands-free loop for lobby screens and room TVs |
 | Client link | `/?brand=<key>` | A preset made for one client (no "All demos" link) |
 
 To add a demo: add a preset in `src/brand/presets.js`, a path in `src/route.js` (`PATH_PRESETS`),
@@ -59,6 +61,24 @@ yoga lawn, plus the spa and kids club in existing gardens. Each place has a book
 ("Check availability", "Reserve a table", "Book a treatment"…), a "Today" schedule, and its own
 guided tour.
 
+## Beach hotel (home tour demo)
+`/hotel`: **Saffron Shores Resort**, fictional. A crescent hotel on its own beach: double-height
+lobby with chandelier, a Signature Suite on floor 8 with balcony, lagoon pool with swim-up bar,
+kids splash zone, beach palapas, a pier to an overwater restaurant, beach villas with plunge pools,
+and a spa. **Watch the tour** runs about 90 s from the sea, through the lobby and suite, to golden
+hour, dinner over the water and fireworks. Every place has its own booking button.
+
+## Hotel TV mode
+`/hotel-tv` is for a lobby screen or a smart TV browser. It plays the hotel tour on a loop with
+no controls, and a side panel shows:
+- the real time and date
+- "Today at the resort" (past items dim, the next one is marked)
+- rotating offers
+- a **Scan to book** QR code (the preset's booking URL, or the `/hotel` page if none is set).
+
+Open it full screen (F11 on a PC, or the TV browser's full-screen option). Schedule and offers come from
+the `hotel` preset in `src/brand/presets.js`.
+
 ## Client re-skins
 Each client is one entry in `src/brand/presets.js`: name, intro text, accent colour, zone names and
 taglines, booking button labels and URLs, and the text the drones spell. Open with `?brand=<key>`,
@@ -82,3 +102,5 @@ explaining where the client's booking page would open.
 ## Known limits
 - Tested on a desktop Mac (M1 Pro) in Chrome. Test on the client's device type before the meeting.
 - Three zones are "opening soon": flower-carpet designs from the air, not yet walkable gardens.
+- Hotel interiors are the lobby and one suite only. TV mode is not yet tested on a real smart TV;
+  use a recent Android TV / Fire TV browser or a mini PC.

@@ -38,7 +38,8 @@ function Stars() {
   return <points geometry={geometry} material={material} frustumCulled={false} />
 }
 
-export default function ZoneLighting() {
+// nightMap: builder for the painted night light texture; spots: practical night lights.
+export default function ZoneLighting({ nightMap = buildNightMap, spots = null } = {}) {
   const scene = useThree((s) => s.scene)
   const controls = useThree((s) => s.controls)
   const gl = useThree((s) => s.gl)
@@ -59,7 +60,7 @@ export default function ZoneLighting() {
   const hemi = useRef()
 
   useEffect(() => {
-    const map = buildNightMap()
+    const map = nightMap()
     nightUniforms.uNightMap.value = map
     return () => map.dispose()
   }, [])
@@ -82,10 +83,11 @@ export default function ZoneLighting() {
 
   // Practical night lights: four park lamps plus two warm fills under the arcade.
   const lightSpots = useMemo(() => {
-    const spots = lamps.map((l) => pathToWorld(l.s, l.d).add(new THREE.Vector3(0, 3.1, 0)))
-    for (const i of [2, 6]) spots.push(archPoint(arches[i], 0).add(new THREE.Vector3(0, -0.6, 0)))
-    return spots
-  }, [])
+    if (spots) return spots
+    const list = lamps.map((l) => pathToWorld(l.s, l.d).add(new THREE.Vector3(0, 3.1, 0)))
+    for (const i of [2, 6]) list.push(archPoint(arches[i], 0).add(new THREE.Vector3(0, -0.6, 0)))
+    return list
+  }, [spots])
 
   useFrame((state, delta) => {
     // Shadow frustum follows what the visitor is looking at, sized to the camera distance.

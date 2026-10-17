@@ -1198,3 +1198,206 @@ input:focus-visible {
 .brand-home:hover {
   color: var(--ink);
 }
+
+/* TV / lobby-screen mode */
+.tv {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font-size: clamp(12px, 1.25vw, 22px);
+}
+
+.tv-loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #120c16;
+  color: var(--ink);
+  font-size: 3em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tv-caption {
+  position: fixed;
+  left: 4vw;
+  bottom: 7vh;
+  max-width: 55vw;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+  animation: caption-in 1.2s ease both;
+}
+
+.tv-caption h2 {
+  margin: 0 0 0.25em;
+  font-size: 3.2em;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.tv-caption p {
+  margin: 0;
+  font-size: 1.35em;
+  color: var(--ink-soft);
+}
+
+.tv-panel {
+  position: fixed;
+  top: 3vh;
+  right: 2vw;
+  bottom: 3vh;
+  display: flex;
+  flex-direction: column;
+  width: 25vw;
+  min-width: 260px;
+  padding: 1.6em;
+  border: 1px solid var(--line);
+  border-radius: 1.2em;
+  background: rgba(16, 11, 20, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.tv-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-weight: 800;
+  font-size: 1.2em;
+}
+
+.tv-clock {
+  margin-top: 0.8em;
+  font-size: 3.6em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.tv-date {
+  color: var(--ink-soft);
+}
+
+.tv-label {
+  margin: 1.4em 0 0.5em;
+  color: var(--accent);
+  font-size: 0.8em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tv-sched {
+  display: grid;
+  gap: 0.35em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tv-sched li {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.45em 0.6em;
+  border-radius: 0.5em;
+}
+
+.tv-sched li span {
+  width: 3.2em;
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tv-sched li.past {
+  opacity: 0.4;
+}
+
+.tv-sched li.next {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tv-sched li em {
+  margin-left: auto;
+  padding: 0.1em 0.5em;
+  border-radius: 0.3em;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.7em;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tv-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  margin-top: 1.2em;
+  padding: 0.9em 1em;
+  border-left: 3px solid var(--accent);
+  border-radius: 0.4em;
+  background: rgba(255, 255, 255, 0.06);
+  animation: panel-in 0.6s ease;
+}
+
+.tv-offer span {
+  color: var(--ink-soft);
+  font-size: 0.9em;
+}
+
+.tv-qr {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-top: auto;
+  padding-top: 1em;
+}
+
+.tv-qr img {
+  width: 6.5em;
+  height: 6.5em;
+  border-radius: 0.5em;
+}
+
+.tv-qr span {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-soft);
+  font-size: 0.9em;
+}
+
+.tv-qr strong {
+  color: var(--ink);
+  font-size: 1.15em;
+}
+
+@media (max-width: 760px) {
+  .tv-panel {
+    top: auto;
+    left: 3vw;
+    right: 3vw;
+    width: auto;
+    min-width: 0;
+    max-height: 45vh;
+    overflow: hidden;
+    font-size: 11px;
+  }
+
+  .tv-caption {
+    bottom: 50vh;
+    max-width: 90vw;
+  }
+}
+
+/* Tour cut: dip to black over the scene, under the HUD. */
+.tour-fade {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 14;
+}

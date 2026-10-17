@@ -37,6 +37,7 @@ function droneMaterial(uniforms) {
       attribute float aSeed;
       uniform float uMix;
       uniform float uFace;
+      uniform vec3 uCenter;
       uniform float uTime;
       varying vec3 vCol;
       varying float vTw;
@@ -47,7 +48,7 @@ function droneMaterial(uniforms) {
         vec3 p = mix(aFrom, aTo, m);
         p.z += sin(3.14159 * m) * (aSeed - 0.5) * 10.0;
         p += vec3(sin(uTime * 0.9 + aSeed * 40.0), cos(uTime * 1.1 + aSeed * 31.0), 0.0) * 0.06;
-        vec3 w = faceRotate(p, uFace) + vec3(0.0, ${SHOW_Y.toFixed(1)}, 0.0);
+        vec3 w = faceRotate(p, uFace) + vec3(0.0, ${SHOW_Y.toFixed(1)}, 0.0) + uCenter;
         vCol = mix(aColFrom, aColTo, m);
         vTw = 0.8 + 0.2 * sin(uTime * 6.0 + aSeed * 90.0);
         vec4 mv = modelViewMatrix * vec4(w, 1.0);
@@ -77,6 +78,7 @@ function fireworkMaterial(uniforms) {
       attribute vec2 aTime;
       uniform float uShowT;
       uniform float uFace;
+      uniform vec3 uCenter;
       varying vec3 vCol;
       varying float vA;
       ${ROTATE}
@@ -99,7 +101,7 @@ function fireworkMaterial(uniforms) {
           if (age > 1.6) a *= 0.5 + 0.5 * sin(age * 40.0 + position.x);
           size = 1.0;
         }
-        vec3 w = faceRotate(p, uFace);
+        vec3 w = faceRotate(p, uFace) + uCenter;
         vCol = color;
         vA = a;
         vec4 mv = modelViewMatrix * vec4(w, 1.0);
@@ -119,7 +121,8 @@ function fireworkMaterial(uniforms) {
   })
 }
 
-export default function LightShow() {
+// center: where on the ground the show is staged (formations hover SHOW_Y above it).
+export default function LightShow({ center = [0, 0, 0] } = {}) {
   const formations = useMemo(() => buildFormations(BRAND.showText), [])
   const fw = useMemo(() => buildFireworks(), [])
   const run = useRef({ seg: -1, nextBoom: 0 })
@@ -128,6 +131,7 @@ export default function LightShow() {
     const uniforms = {
       uMix: { value: 0 },
       uFace: { value: 0 },
+      uCenter: { value: new THREE.Vector3(...center) },
       uAlpha: { value: 0 },
       uShowT: { value: -99 },
       uTime: zoneUniforms.uTime,
@@ -184,7 +188,7 @@ export default function LightShow() {
     if (t < 0) return
     if (r.seg === -1) {
       // Face the formations toward the visitor, wherever they watch from.
-      uniforms.uFace.value = Math.atan2(camera.position.x, camera.position.z)
+      uniforms.uFace.value = Math.atan2(camera.position.x - center[0], camera.position.z - center[2])
       r.nextBoom = 0
       drones.visible = fireworks.visible = true
     }

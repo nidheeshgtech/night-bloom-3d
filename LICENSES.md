@@ -15,6 +15,11 @@ existing garden or attraction. All sculptures, layouts and installations are ori
 | `public/assets/textures/mossy_rock/*` (1k) | [Poly Haven](https://polyhaven.com/a/mossy_rock) | Rob Tuytel | CC0 1.0 | Stream and grotto boulders (Wingsong Conservatory). |
 | `public/assets/textures/white_sandstone_bricks/*` (1k) | [Poly Haven](https://polyhaven.com/a/white_sandstone_bricks) | Poly Haven | CC0 1.0 | Path kerb stones. |
 
+## Code libraries
+
+Besides the stack in `package.json` (React, Three.js and friends, all MIT), the TV mode uses
+[qrcode](https://www.npmjs.com/package/qrcode) 1.5.4 (MIT) to draw the booking QR code in the browser.
+
 CC0 places no conditions on use, including commercial use. Attribution above is a courtesy and
 for traceability. Check the asset pages again before publishing in case anything has changed.
 
@@ -33,6 +38,9 @@ for traceability. Check the asset pages again before publishing in case anything
   The Lotus Crown is deliberately unlike any existing landmark (open petal fins, not a lattice dome).
 - Resort venue (pool, villas, dining terrace) and the fictional 'Dunebloom Resort & Spa' name:
   generated in code. Showcase thumbnails in public/showcase are screenshots of this project.
+- Beach hotel (crescent wings, tower, crown, lobby, suite, lagoon pool, pier, overwater
+  restaurant, villas, spa) and the fictional 'Saffron Shores Resort' name: original designs generated
+  in code, not modelled on any real hotel. Room TV and lobby signs are drawn on a canvas.
 - Festival venue (stages, food trucks, booths, signage) and the fictional 'Sandglow Festival'
   name: generated in code; sponsor names are placeholders.
 - Skyline: generic procedural towers, deliberately not modelled on any real building.

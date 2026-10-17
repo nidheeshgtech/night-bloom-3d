@@ -19,6 +19,9 @@ import BotanyPreview from './zone/BotanyPreview'
 import WorldScene from './world/WorldScene'
 import ZoneEffects from './zone/ZoneEffects'
 import { bloomWorld } from './world/bloomWorld'
+import { hotelWorld } from './hotel/hotelWorld'
+import HotelScene from './hotel/HotelScene'
+import { BRAND } from './brand'
 import { islandWorld } from './lib/islandWorld'
 import { setWorld } from './lib/world'
 
@@ -35,9 +38,9 @@ function budgetDpr(quality) {
 const params = new URLSearchParams(window.location.search)
 const ZONE = params.get('zone')
 // The first prototype (floating island) stays available at ?world=island for comparison.
-const world = params.get('world') === 'island' ? islandWorld : bloomWorld
+const world = params.get('world') === 'island' ? islandWorld : BRAND.venue === 'hotel' ? hotelWorld : bloomWorld
 setWorld(world)
-const isZone = world.id === 'bloom'
+const isZone = world.id !== 'island'
 
 export default function App() {
   if (ZONE === 'botany') {
@@ -74,7 +77,7 @@ export default function App() {
             step back up: every change re-allocates render targets, a visible hitch. */}
         {monitor && <PerformanceMonitor onDecline={() => setDpr((d) => Math.max(1, Math.round(d * 0.8 * 100) / 100))} />}
         {isZone ? (
-          <WorldScene />
+          world.id === 'hotel' ? <HotelScene /> : <WorldScene />
         ) : (
           <>
             <Atmosphere />
@@ -92,6 +95,8 @@ export default function App() {
         <Warmup />
         {quality === 'high' && (isZone ? <ZoneEffects /> : <Effects />)}
       </Canvas>
+      {/* Dip to black for tour cuts (driven directly by the camera rig). */}
+      <div className="tour-fade" />
       <Hud />
     </>
   )
